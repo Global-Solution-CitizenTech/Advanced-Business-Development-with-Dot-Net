@@ -1,0 +1,6 @@
+@ZelaFix_HostAddress = http://localhost:5224
+
+GET {{ZelaFix_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
