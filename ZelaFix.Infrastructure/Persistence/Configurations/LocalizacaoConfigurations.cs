@@ -11,7 +11,7 @@ public sealed class EstadoConfiguration : IEntityTypeConfiguration<Estado>
         builder.ToTable("ESTADO");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ComoNumber5("ID_ESTADO").ValueGeneratedOnAdd();
-        builder.Property(e => e.Nome).HasColumnName("NM_ESTADO").HasMaxLength(30).IsRequired();
+        builder.Property(e => e.Nome).HasColumnName("NM_ESTADO").HasMaxLength(30).IsUnicode(false).IsRequired();
     }
 }
 
@@ -22,7 +22,7 @@ public sealed class CidadeConfiguration : IEntityTypeConfiguration<Cidade>
         builder.ToTable("CIDADE");
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id).ComoNumber5("ID_CIDADE").ValueGeneratedOnAdd();
-        builder.Property(c => c.Nome).HasColumnName("NM_CIDADE").HasMaxLength(50).IsRequired();
+        builder.Property(c => c.Nome).HasColumnName("NM_CIDADE").HasMaxLength(50).IsUnicode(false).IsRequired();
         builder.Property(c => c.EstadoId).ComoNumber5("ESTADO_ID_ESTADO");
 
         builder.HasOne(c => c.Estado)
@@ -39,7 +39,7 @@ public sealed class BairroConfiguration : IEntityTypeConfiguration<Bairro>
         builder.ToTable("BAIRRO");
         builder.HasKey(b => b.Id);
         builder.Property(b => b.Id).ComoNumber5("ID_BAIRRO").ValueGeneratedOnAdd();
-        builder.Property(b => b.Nome).HasColumnName("NM_BAIRRO").HasMaxLength(50).IsRequired();
+        builder.Property(b => b.Nome).HasColumnName("NM_BAIRRO").HasMaxLength(50).IsUnicode(false).IsRequired();
         builder.Property(b => b.CidadeId).ComoNumber5("CIDADE_ID_CIDADE");
 
         builder.HasOne(b => b.Cidade)
@@ -56,10 +56,10 @@ public sealed class EnderecoConfiguration : IEntityTypeConfiguration<Endereco>
         builder.ToTable("ENDERECO");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ComoNumber5("ID_ENDERECO").ValueGeneratedOnAdd();
-        builder.Property(e => e.Cep).HasColumnName("CEP").HasMaxLength(8).IsRequired();
-        builder.Property(e => e.Rua).HasColumnName("RUA").HasMaxLength(100).IsRequired();
-        builder.Property(e => e.Numero).HasColumnName("NUMERO").HasMaxLength(100).IsRequired();
-        builder.Property(e => e.Referencia).HasColumnName("REFERENCIA").HasMaxLength(50).IsRequired();
+        builder.Property(e => e.Cep).HasColumnName("CEP").HasMaxLength(8).IsUnicode(false).IsRequired();
+        builder.Property(e => e.Rua).HasColumnName("RUA").HasMaxLength(100).IsUnicode(false).IsRequired();
+        builder.Property(e => e.Numero).HasColumnName("NUMERO").HasMaxLength(100).IsUnicode(false).IsRequired();
+        builder.Property(e => e.Referencia).HasColumnName("REFERENCIA").HasMaxLength(50).IsUnicode(false).IsRequired();
         builder.Property(e => e.BairroId).ComoNumber5("BAIRRO_ID_BAIRRO");
 
         builder.HasOne(e => e.Bairro)

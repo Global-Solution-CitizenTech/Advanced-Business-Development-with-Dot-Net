@@ -38,7 +38,8 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(50)")
                         .HasColumnName("NM_BAIRRO");
 
                     b.HasKey("Id");
@@ -60,12 +61,19 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(50)")
                         .HasColumnName("NM_CATEGORIA");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CATEGORIA", (string)null);
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("CATEGORIA", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CATEGORIA_NOME", "NM_CATEGORIA IN ('ILUMINACAO_PUBLICA', 'VIAS_E_PAVIMENTACAO', 'DRENAGEM_E_ESGOTO', 'LIMPEZA_URBANA', 'ARVORES_E_PARQUES', 'SINALIZACAO_E_TRANSITO')");
+                        });
                 });
 
             modelBuilder.Entity("ZelaFix.Domain.Entities.Chamado", b =>
@@ -88,7 +96,8 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Descricao")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("NVARCHAR2(1000)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(1000)")
                         .HasColumnName("DESCRICAO");
 
                     b.Property<short>("EnderecoId")
@@ -100,10 +109,19 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                         .HasColumnType("BLOB")
                         .HasColumnName("FOTO");
 
+                    b.Property<short>("OrgaoGovernoId")
+                        .HasColumnType("NUMBER(5)")
+                        .HasColumnName("ORGAO_GOVERNO_ID_ORGAO");
+
+                    b.Property<short>("PrioridadeId")
+                        .HasColumnType("NUMBER(5)")
+                        .HasColumnName("PRIORIDADE_ID_PRIORIDADE");
+
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
                         .HasColumnName("TITULO");
 
                     b.Property<short>("UsuarioId")
@@ -115,6 +133,10 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.HasIndex("CategoriaId");
 
                     b.HasIndex("EnderecoId");
+
+                    b.HasIndex("OrgaoGovernoId");
+
+                    b.HasIndex("PrioridadeId");
 
                     b.HasIndex("UsuarioId");
 
@@ -137,7 +159,8 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(50)")
                         .HasColumnName("NM_CIDADE");
 
                     b.HasKey("Id");
@@ -163,25 +186,29 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Cep")
                         .IsRequired()
                         .HasMaxLength(8)
-                        .HasColumnType("NVARCHAR2(8)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(8)")
                         .HasColumnName("CEP");
 
                     b.Property<string>("Numero")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
                         .HasColumnName("NUMERO");
 
                     b.Property<string>("Referencia")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(50)")
                         .HasColumnName("REFERENCIA");
 
                     b.Property<string>("Rua")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
                         .HasColumnName("RUA");
 
                     b.HasKey("Id");
@@ -203,7 +230,8 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("NVARCHAR2(30)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(30)")
                         .HasColumnName("NM_ESTADO");
 
                     b.HasKey("Id");
@@ -253,6 +281,60 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.ToTable("HIST_CHAMADO", (string)null);
                 });
 
+            modelBuilder.Entity("ZelaFix.Domain.Entities.OrgaoGoverno", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("NUMBER(5)")
+                        .HasColumnName("ID_ORGAO");
+
+                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
+                        .HasColumnName("ORGAO_GOVERNO");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("ORGAO_GOVERNO", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ORGAO_GOVERNO_NOME", "ORGAO_GOVERNO IN ('SECRETARIA_OBRAS', 'CET_TRANSITO', 'ILUMINACAO_PUBLICA', 'DEFESA_CIVIL', 'SUBPREFEITURA', 'SANEAMENTO_BASICO')");
+                        });
+                });
+
+            modelBuilder.Entity("ZelaFix.Domain.Entities.Prioridade", b =>
+                {
+                    b.Property<short>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("NUMBER(5)")
+                        .HasColumnName("ID_PRIORIDADE");
+
+                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<short>("Id"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(20)")
+                        .HasColumnName("NM_PRIORIDADE");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("PRIORIDADE", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PRIORIDADE_NOME", "NM_PRIORIDADE IN ('BAIXA', 'MEDIA', 'ALTA', 'URGENTE')");
+                        });
+                });
+
             modelBuilder.Entity("ZelaFix.Domain.Entities.Status", b =>
                 {
                     b.Property<short>("Id")
@@ -265,12 +347,16 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("NVARCHAR2(20)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(20)")
                         .HasColumnName("NM_STATUS");
 
                     b.HasKey("Id");
 
-                    b.ToTable("STATUS", (string)null);
+                    b.ToTable("STATUS", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_STATUS_NOME", "NM_STATUS IN ('PENDENTE', 'EM_ANALISE', 'EM_EXECUCAO', 'CONCLUIDO', 'REJEITADO')");
+                        });
                 });
 
             modelBuilder.Entity("ZelaFix.Domain.Entities.Telefone", b =>
@@ -285,13 +371,15 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Ddd")
                         .IsRequired()
                         .HasMaxLength(2)
-                        .HasColumnType("NVARCHAR2(2)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(2)")
                         .HasColumnName("NUM_DDD");
 
                     b.Property<string>("Numero")
                         .IsRequired()
                         .HasMaxLength(9)
-                        .HasColumnType("NVARCHAR2(9)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(9)")
                         .HasColumnName("NUM_TEL");
 
                     b.Property<short>("UsuarioId")
@@ -318,13 +406,15 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Cargo")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("NVARCHAR2(10)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(10)")
                         .HasColumnName("CARGO");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
                         .HasColumnName("EMAIL");
 
                     b.Property<short>("EnderecoId")
@@ -334,13 +424,15 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(100)")
                         .HasColumnName("NM_USUARIO");
 
                     b.Property<string>("SenhaHash")
                         .IsRequired()
                         .HasMaxLength(60)
-                        .HasColumnType("NVARCHAR2(60)")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(60)")
                         .HasColumnName("SENHA");
 
                     b.HasKey("Id");
@@ -376,9 +468,10 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChamadoId");
-
                     b.HasIndex("UsuarioId");
+
+                    b.HasIndex("ChamadoId", "UsuarioId")
+                        .IsUnique();
 
                     b.ToTable("VOTO_CHAMADO", (string)null);
                 });
@@ -408,6 +501,18 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ZelaFix.Domain.Entities.OrgaoGoverno", "OrgaoGoverno")
+                        .WithMany()
+                        .HasForeignKey("OrgaoGovernoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ZelaFix.Domain.Entities.Prioridade", "Prioridade")
+                        .WithMany()
+                        .HasForeignKey("PrioridadeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("ZelaFix.Domain.Entities.Usuario", "Usuario")
                         .WithMany("Chamados")
                         .HasForeignKey("UsuarioId")
@@ -417,6 +522,10 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                     b.Navigation("Categoria");
 
                     b.Navigation("Endereco");
+
+                    b.Navigation("OrgaoGoverno");
+
+                    b.Navigation("Prioridade");
 
                     b.Navigation("Usuario");
                 });

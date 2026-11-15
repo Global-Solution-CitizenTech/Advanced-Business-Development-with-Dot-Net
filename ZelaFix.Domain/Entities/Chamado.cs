@@ -19,6 +19,12 @@ public sealed class Chamado : BaseEntity
     public int CategoriaId { get; private set; }
     public Categoria Categoria { get; private set; } = null!;
 
+    public int PrioridadeId { get; private set; }
+    public Prioridade Prioridade { get; private set; } = null!;
+
+    public int OrgaoGovernoId { get; private set; }
+    public OrgaoGoverno OrgaoGoverno { get; private set; } = null!;
+
     public List<HistChamado> Historico { get; private set; } = [];
     public List<VotoChamado> Votos { get; private set; } = [];
 
@@ -30,10 +36,13 @@ public sealed class Chamado : BaseEntity
 
     private Chamado() { }
 
-    public Chamado(string titulo, string descricao, byte[] foto, int usuarioId, int enderecoId, int categoriaId)
+    public Chamado(string titulo, string descricao, byte[] foto, int usuarioId, int enderecoId,
+        int categoriaId, int prioridadeId, int orgaoGovernoId)
     {
         Atualizar(titulo, descricao, foto, enderecoId, categoriaId);
         UsuarioId = Validacao.Id(usuarioId, "O chamado deve ter um autor válido.");
+        PrioridadeId = Validacao.Id(prioridadeId, "O chamado deve ter uma prioridade válida.");
+        OrgaoGovernoId = Validacao.Id(orgaoGovernoId, "O chamado deve ter um órgão responsável válido.");
         DataAbertura = DateTime.UtcNow;
     }
 
@@ -48,6 +57,11 @@ public sealed class Chamado : BaseEntity
 
         EnderecoId = Validacao.Id(enderecoId, "O chamado deve ter um endereço válido.");
         CategoriaId = Validacao.Id(categoriaId, "O chamado deve ter uma categoria válida.");
+    }
+
+    public void AtualizarPrioridade(int prioridadeId)
+    {
+        PrioridadeId = Validacao.Id(prioridadeId, "O chamado deve ter uma prioridade válida.");
     }
 
     public void RegistrarHistorico(int statusId, int usuarioId, string observacoes) =>

@@ -11,13 +11,15 @@ public sealed class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
         builder.ToTable("CHAMADO");
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id).ComoNumber5("ID_CHAMADO").ValueGeneratedOnAdd();
-        builder.Property(c => c.Titulo).HasColumnName("TITULO").HasMaxLength(100).IsRequired();
-        builder.Property(c => c.Descricao).HasColumnName("DESCRICAO").HasMaxLength(1000).IsRequired();
+        builder.Property(c => c.Titulo).HasColumnName("TITULO").HasMaxLength(100).IsUnicode(false).IsRequired();
+        builder.Property(c => c.Descricao).HasColumnName("DESCRICAO").HasMaxLength(1000).IsUnicode(false).IsRequired();
         builder.Property(c => c.Foto).HasColumnName("FOTO").HasColumnType("BLOB").IsRequired();
-        builder.Property(c => c.DataAbertura).HasColumnName("DT_ABERTURA").HasColumnType("DATE");
+        builder.Property(c => c.DataAbertura).HasColumnName("DT_ABERTURA").HasColumnType("DATE").IsRequired();
         builder.Property(c => c.UsuarioId).ComoNumber5("USUARIO_ID_USUARIO");
         builder.Property(c => c.EnderecoId).ComoNumber5("ENDERECO_ID_ENDERECO");
         builder.Property(c => c.CategoriaId).ComoNumber5("CATEGORIA_ID_CATEGORIA");
+        builder.Property(c => c.PrioridadeId).ComoNumber5("PRIORIDADE_ID_PRIORIDADE");
+        builder.Property(c => c.OrgaoGovernoId).ComoNumber5("ORGAO_GOVERNO_ID_ORGAO");
 
         builder.HasOne(c => c.Usuario)
             .WithMany(u => u.Chamados)
@@ -32,6 +34,16 @@ public sealed class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
         builder.HasOne(c => c.Categoria)
             .WithMany()
             .HasForeignKey(c => c.CategoriaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.Prioridade)
+            .WithMany()
+            .HasForeignKey(c => c.PrioridadeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.OrgaoGoverno)
+            .WithMany()
+            .HasForeignKey(c => c.OrgaoGovernoId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
@@ -76,6 +88,7 @@ public sealed class VotoChamadoConfiguration : IEntityTypeConfiguration<VotoCham
         builder.Property(v => v.DataVoto).HasColumnName("DT_VOTO").HasColumnType("DATE");
         builder.Property(v => v.ChamadoId).ComoNumber5("CHAMADO_ID_CHAMADO");
         builder.Property(v => v.UsuarioId).ComoNumber5("USUARIO_ID_USUARIO");
+        builder.HasIndex(v => new { v.ChamadoId, v.UsuarioId }).IsUnique();
 
         builder.HasOne(v => v.Chamado)
             .WithMany(c => c.Votos)

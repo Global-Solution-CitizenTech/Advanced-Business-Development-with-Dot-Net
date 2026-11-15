@@ -8,13 +8,13 @@ namespace ZelaFix.Domain.Entities;
 public sealed class Status : BaseEntity
 {
     // Valores do CHECK ck_status_nome do banco.
-    public const string Aberto = "ABERTO";
+    public const string Pendente = "PENDENTE";
     public const string EmAnalise = "EM_ANALISE";
     public const string EmExecucao = "EM_EXECUCAO";
     public const string Concluido = "CONCLUIDO";
     public const string Rejeitado = "REJEITADO";
 
-    public static readonly IReadOnlyList<string> Todos = [Aberto, EmAnalise, EmExecucao, Concluido, Rejeitado];
+    public static readonly IReadOnlyList<string> Todos = [Pendente, EmAnalise, EmExecucao, Concluido, Rejeitado];
 
     public string Nome { get; private set; } = string.Empty;
 

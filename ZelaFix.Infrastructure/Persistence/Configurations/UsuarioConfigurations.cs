@@ -12,13 +12,14 @@ public sealed class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.ToTable("USUARIO");
         builder.HasKey(u => u.Id);
         builder.Property(u => u.Id).ComoNumber5("ID_USUARIO").ValueGeneratedOnAdd();
-        builder.Property(u => u.Nome).HasColumnName("NM_USUARIO").HasMaxLength(100).IsRequired();
-        builder.Property(u => u.Email).HasColumnName("EMAIL").HasMaxLength(100).IsRequired();
-        builder.Property(u => u.SenhaHash).HasColumnName("SENHA").HasMaxLength(60).IsRequired();
+        builder.Property(u => u.Nome).HasColumnName("NM_USUARIO").HasMaxLength(100).IsUnicode(false).IsRequired();
+        builder.Property(u => u.Email).HasColumnName("EMAIL").HasMaxLength(100).IsUnicode(false).IsRequired();
+        builder.Property(u => u.SenhaHash).HasColumnName("SENHA").HasMaxLength(60).IsUnicode(false).IsRequired();
 
         builder.Property(u => u.Cargo)
             .HasColumnName("CARGO")
             .HasMaxLength(10)
+            .IsUnicode(false)
             .IsRequired()
             .HasConversion(
                 v => v.ToString().ToUpperInvariant(),
@@ -42,8 +43,8 @@ public sealed class TelefoneConfiguration : IEntityTypeConfiguration<Telefone>
         builder.ToTable("TELEFONE");
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Id).ComoNumber5("ID_TELEFONE").ValueGeneratedOnAdd();
-        builder.Property(t => t.Ddd).HasColumnName("NUM_DDD").HasMaxLength(2).IsRequired();
-        builder.Property(t => t.Numero).HasColumnName("NUM_TEL").HasMaxLength(9).IsRequired();
+        builder.Property(t => t.Ddd).HasColumnName("NUM_DDD").HasMaxLength(2).IsUnicode(false).IsRequired();
+        builder.Property(t => t.Numero).HasColumnName("NUM_TEL").HasMaxLength(9).IsUnicode(false).IsRequired();
         builder.Property(t => t.UsuarioId).ComoNumber5("USUARIO_ID_USUARIO");
 
         builder.HasIndex(t => t.UsuarioId).IsUnique();
