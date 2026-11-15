@@ -30,20 +30,20 @@ public static class ChamadoEndpoints
 
         grupo.MapPost("/", CriarAsync)
             .WithName("CriarChamado")
-            .WithSummary("Abre um chamado (procedure pr_abrir_chamado). Exige o cabeçalho Idempotency-Key.")
+            .WithSummary("Abre um novo chamado com título, descrição, foto, categoria e endereço. Exige Idempotency-Key.")
             .WithValidation<CriarChamadoRequest>()
             .WithIdempotency<CriarChamadoRequest>();
 
         grupo.MapPut("/{id:int}", AtualizarAsync)
             .WithName("AtualizarChamado")
-            .WithSummary("Edita um chamado (autor enquanto ABERTO, ou gestor).")
+            .WithSummary("Edita um chamado (autor enquanto PENDENTE, ou gestor).")
             .WithValidation<AtualizarChamadoRequest>()
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
         grupo.MapPatch("/{id:int}/status", AlterarStatusAsync)
             .RequireAuthorization(AuthorizationPolicies.GestorOnly)
             .WithName("AlterarStatusChamado")
-            .WithSummary("Altera o status (ABERTO, EM_ANALISE, EM_EXECUCAO, CONCLUIDO, REJEITADO). Somente gestor; exige Idempotency-Key.")
+            .WithSummary("Altera o status (PENDENTE, EM_ANALISE, EM_EXECUCAO, CONCLUIDO, REJEITADO). Somente gestor; exige Idempotency-Key.")
             .WithValidation<AlterarStatusRequest>()
             .WithIdempotency<AlterarStatusRequest>()
             .ProducesProblem(StatusCodes.Status403Forbidden);
@@ -60,7 +60,7 @@ public static class ChamadoEndpoints
 
         grupo.MapDelete("/{id:int}", ExcluirAsync)
             .WithName("ExcluirChamado")
-            .WithSummary("Exclui um chamado (autor enquanto ABERTO, ou gestor).")
+            .WithSummary("Exclui um chamado (autor enquanto PENDENTE, ou gestor).")
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return app;

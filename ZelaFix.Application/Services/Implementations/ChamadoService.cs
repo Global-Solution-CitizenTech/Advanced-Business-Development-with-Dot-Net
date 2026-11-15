@@ -12,6 +12,9 @@ namespace ZelaFix.Application.Services.Implementations;
 public sealed class ChamadoService(
     IChamadoRepository chamados,
     IRepository<Categoria> categorias,
+    IRepository<Prioridade> prioridades,
+    IRepository<OrgaoGoverno> orgaos,
+    IRepository<HistChamado> historicos,
     IRepository<Status> statusRepository,
     IRepository<VotoChamado> votos,
     IChamadoProcedures procedures,
@@ -28,8 +31,7 @@ public sealed class ChamadoService(
 
         var pagina = await chamados.BuscarAsync(f, usuarioId, ct);
 
-        // Fotos só vêm na listagem se o cliente pedir (incluirFoto=true): é o BLOB, o payload pesado.
-        var fotos = f.IncluirFoto
+        var fotos = f.IncluirFoto == true
             ? await chamados.ObterFotosAsync(pagina.Content.Select(c => c.Id).ToList(), ct)
             : null;
 
@@ -50,18 +52,29 @@ public sealed class ChamadoService(
     public async Task<ChamadoResponse> CriarAsync(CriarChamadoRequest request, int usuarioId, CancellationToken ct = default)
     {
         var foto = FotoImagem.Decodificar(request.FotoBase64);
-        await GarantirCategoriaAsync(request.CategoriaId, ct);
+        var categoria = await GarantirCategoriaAsync(request.CategoriaId, ct);
 
-        // O endereço é gravado pela aplicação; chamado e histórico inicial (ABERTO) pela procedure do banco.
+        // Prioridade: se informada e válida usa; senão default 2 (MEDIA)
+        var prioridadeId = request.PrioridadeId.HasValue && request.PrioridadeId.Value > 0
+            && await prioridades.ExistsAsync(p => p.Id == request.PrioridadeId.Value, ct)
+                ? request.PrioridadeId.Value
+                : (await prioridades.FirstOrDefaultAsync(p => p.Nome == "MEDIA", ct))?.Id ?? 2;
+
+        // Órgão governamental: se informado e válido usa; senão mapeia inteligentemente pela categoria
+        var orgaoId = request.OrgaoGovernoId.HasValue && request.OrgaoGovernoId.Value > 0
+            && await orgaos.ExistsAsync(o => o.Id == request.OrgaoGovernoId.Value, ct)
+                ? request.OrgaoGovernoId.Value
+                : await MapearOrgaoPorCategoriaAsync(categoria.Nome, ct);
+
         var id = await unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var endereco = await enderecoResolver.ResolverAsync(request.Cep, request.Numero, request.Referencia, ct);
             return await procedures.AbrirChamadoAsync(
                 request.Titulo.Trim(), request.Descricao.Trim(), foto.Bytes,
-                usuarioId, endereco.Id, request.CategoriaId, ct);
+                usuarioId, endereco.Id, request.CategoriaId, prioridadeId, orgaoId, ct);
         }, ct);
 
-        logger.LogInformation("Chamado {ChamadoId} aberto pelo usuário {UsuarioId}.", id, usuarioId);
+        logger.LogInformation("Chamado {ChamadoId} aberto pelo cidadão {UsuarioId}.", id, usuarioId);
         return (await ObterAsync(id, usuarioId, ct))!;
     }
 
@@ -74,8 +87,8 @@ public sealed class ChamadoService(
 
         if (!ehGestor && atual.AutorId != usuarioId)
             throw new AcessoNegadoException("Somente o autor ou um gestor pode editar este chamado.");
-        if (!ehGestor && (atual.Status ?? Status.Aberto) != Status.Aberto)
-            throw new DomainException("O chamado só pode ser editado pelo autor enquanto estiver 'ABERTO'.");
+        if (!ehGestor && (atual.Status ?? Status.Pendente) != Status.Pendente)
+            throw new DomainException("O chamado só pode ser editado pelo autor enquanto estiver 'PENDENTE'.");
 
         await GarantirCategoriaAsync(request.CategoriaId, ct);
         var novaFoto = string.IsNullOrWhiteSpace(request.FotoBase64)
@@ -106,7 +119,7 @@ public sealed class ChamadoService(
         if (atual is null)
             return null;
 
-        var statusAtual = atual.Status ?? Status.Aberto;
+        var statusAtual = atual.Status ?? Status.Pendente;
         if (statusAtual == novo)
             throw new ConflitoException($"O chamado já está com o status '{novo}'.");
 
@@ -115,7 +128,7 @@ public sealed class ChamadoService(
             : request.Observacao.Trim();
 
         var status = await ObterStatusAsync(novo, ct);
-        await procedures.AtualizarStatusAsync(id, status.Id, gestorId, observacao, ct); // valida o gestor no banco
+        await procedures.AtualizarStatusAsync(id, status.Id, gestorId, observacao, ct);
 
         logger.LogInformation("Chamado {ChamadoId} movido de {De} para {Para} pelo gestor {GestorId}.",
             id, statusAtual, novo, gestorId);
@@ -124,14 +137,49 @@ public sealed class ChamadoService(
 
     public async Task<ChamadoResponse?> ApoiarAsync(int id, int usuarioId, CancellationToken ct = default)
     {
-        if (!await chamados.ExistsAsync(c => c.Id == id, ct))
+        var atual = await chamados.ObterLeituraAsync(id, usuarioId, ct);
+        if (atual is null)
             return null;
 
-        // Repetir o apoio não duplica nem dá erro. Autor e chamados encerrados são barrados pelo banco.
+        // Regra de Integridade Cívica: Autor não pode apoiar o próprio chamado
+        if (atual.AutorId == usuarioId)
+            throw new AcessoNegadoException("O autor não pode apoiar o próprio chamado.");
+
+        // Idempotência do voto: apoiar mais de uma vez não duplica
         if (!await votos.ExistsAsync(v => v.ChamadoId == id && v.UsuarioId == usuarioId, ct))
         {
             await procedures.RegistrarVotoAsync(id, usuarioId, ct);
             logger.LogInformation("Usuário {UsuarioId} apoiou o chamado {ChamadoId}.", usuarioId, id);
+
+            // Regra de Negócio: Escalonamento Comunitário de Prioridade por Apoios Populares
+            var totalVotos = await votos.CountAsync(v => v.ChamadoId == id, ct) + 1;
+            var chamado = await chamados.GetByIdAsync(id, ct);
+            if (chamado is not null && atual.Status != Status.Concluido && atual.Status != Status.Rejeitado)
+            {
+                int? novaPrioridadeId = totalVotos switch
+                {
+                    >= 5 when chamado.PrioridadeId < 4 => 4, // URGENTE
+                    >= 3 when chamado.PrioridadeId < 3 => 3, // ALTA
+                    _ => null
+                };
+
+                if (novaPrioridadeId is { } novaP)
+                {
+                    await unitOfWork.ExecuteInTransactionAsync(async () =>
+                    {
+                        chamado.AtualizarPrioridade(novaP);
+                        await chamados.UpdateAsync(chamado, ct);
+                        var statusAtual = await ObterStatusAsync(atual.Status ?? Status.Pendente, ct);
+                        await historicos.AddAsync(new HistChamado(
+                            chamado.Id,
+                            statusAtual.Id,
+                            usuarioId,
+                            $"Escalonamento comunitário: {totalVotos} apoios populares atingidos."), ct);
+                        return true;
+                    }, ct);
+                    logger.LogInformation("Chamado {ChamadoId} escalonado para prioridade {NovaPrioridade} após {Total} apoios.", id, novaP, totalVotos);
+                }
+            }
         }
 
         return await ObterAsync(id, usuarioId, ct);
@@ -162,8 +210,8 @@ public sealed class ChamadoService(
         {
             if (atual.AutorId != usuarioId)
                 throw new AcessoNegadoException("Somente o autor ou um gestor pode excluir este chamado.");
-            if ((atual.Status ?? Status.Aberto) != Status.Aberto)
-                throw new DomainException("O chamado só pode ser excluído pelo autor enquanto estiver 'ABERTO'.");
+            if ((atual.Status ?? Status.Pendente) != Status.Pendente)
+                throw new DomainException("O chamado só pode ser excluído pelo autor enquanto estiver 'PENDENTE'.");
         }
 
         await unitOfWork.ExecuteInTransactionAsync(async () =>
@@ -176,10 +224,25 @@ public sealed class ChamadoService(
         return true;
     }
 
-    private async Task GarantirCategoriaAsync(int categoriaId, CancellationToken ct)
+    private async Task<Categoria> GarantirCategoriaAsync(int categoriaId, CancellationToken ct) =>
+        await categorias.GetByIdAsync(categoriaId, ct)
+        ?? throw new DomainException("Categoria não encontrada.");
+
+    private async Task<int> MapearOrgaoPorCategoriaAsync(string categoriaNome, CancellationToken ct)
     {
-        if (!await categorias.ExistsAsync(c => c.Id == categoriaId, ct))
-            throw new DomainException("Categoria não encontrada.");
+        var nomeOrgao = categoriaNome switch
+        {
+            "ILUMINACAO_PUBLICA" => "ILUMINACAO_PUBLICA",
+            "VIAS_E_PAVIMENTACAO" => "SECRETARIA_OBRAS",
+            "DRENAGEM_E_ESGOTO" => "SANEAMENTO_BASICO",
+            "LIMPEZA_URBANA" => "SUBPREFEITURA",
+            "ARVORES_E_PARQUES" => "SUBPREFEITURA",
+            "SINALIZACAO_E_TRANSITO" => "CET_TRANSITO",
+            _ => "SUBPREFEITURA"
+        };
+
+        var orgao = await orgaos.FirstOrDefaultAsync(o => o.Nome == nomeOrgao, ct);
+        return orgao?.Id ?? 1;
     }
 
     private async Task<Status> ObterStatusAsync(string nome, CancellationToken ct) =>
