@@ -11,13 +11,13 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
     private const string PngBase64 =
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
 
-    private CriarChamadoRequest Novo(string? titulo = null) => new()
+    private CriarChamadoRequest Novo(string numero = "10") => new()
     {
-        Titulo = titulo ?? $"Buraco {Guid.NewGuid():N}"[..20],
-        Descricao = "Buraco grande na calçada, risco para pedestres.",
+        Titulo = "Buraco na pista",
+        Descricao = "Buraco profundo na faixa direita com risco de acidentes.",
         CategoriaId = factory.CategoriaId,
         Cep = "01001-000",
-        Numero = "10",
+        Numero = numero,
         FotoBase64 = PngBase64
     };
 
@@ -48,7 +48,7 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task Criar_ComDadosValidos_DeveRetornar201ComStatusAbertoEFotoEmBase64()
+    public async Task Criar_ComDadosValidos_DeveRetornar201EFotoEmBase64()
     {
         // Arrange
         var (cliente, _) = await factory.CriarCidadaoAsync();
@@ -57,12 +57,14 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         var chamado = await AbrirAsync(cliente);
 
         // Assert
-        Assert.Equal("ABERTO", chamado.Status);
+        Assert.Equal("PENDENTE", chamado.Status);
         Assert.Equal(0, chamado.ApoiosCount);
         Assert.StartsWith("ZEL-", chamado.Protocolo);
         Assert.Equal("image/png", chamado.FotoContentType);
         Assert.Equal(PngBase64, chamado.FotoBase64);
-        Assert.Single(chamado.Historico!);
+        Assert.Equal("MEDIA", chamado.Prioridade);
+        Assert.Equal("SECRETARIA_OBRAS", chamado.Orgao);
+        Assert.Equal(1, chamado.Historico!.Count);
     }
 
     [Fact]
@@ -86,8 +88,11 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         var repetido = await segunda.Content.ReadFromJsonAsync<ChamadoResponse>();
         Assert.Equal(original!.Id, repetido!.Id);
 
-        var lista = await cliente.GetFromJsonAsync<PaginaResponse<ChamadoResponse>>(
-            $"/api/v1/chamados?busca={Uri.EscapeDataString(request.Titulo)}");
+        var listaResponse = await cliente.GetAsync("/api/v1/chamados?apenasMeus=true&busca=Buraco");
+        if (!listaResponse.IsSuccessStatusCode)
+            throw new InvalidOperationException(
+                $"{(int)listaResponse.StatusCode} {listaResponse.ReasonPhrase}: {await listaResponse.Content.ReadAsStringAsync()}");
+        var lista = await listaResponse.Content.ReadFromJsonAsync<PaginaResponse<ChamadoResponse>>();
         Assert.Equal(1, lista!.TotalElements);
     }
 
@@ -97,10 +102,10 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         // Arrange
         var (cliente, _) = await factory.CriarCidadaoAsync();
         var chave = NovaChave();
-        await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", Novo("Titulo original"), chave);
+        await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", Novo("10"), chave);
 
         // Act
-        var response = await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", Novo("Titulo diferente"), chave);
+        var response = await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", Novo("11"), chave);
 
         // Assert
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
@@ -162,14 +167,14 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         var chamado = await AbrirAsync(cidadao);
 
         // Act
-        var response = await MudarStatusAsync(gestor, chamado.Id, "Em Análise");
+        var response = await MudarStatusAsync(gestor, chamado.Id, "Em Execução");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var atualizado = await response.Content.ReadFromJsonAsync<ChamadoResponse>();
-        Assert.Equal("EM_ANALISE", atualizado!.Status);
+        Assert.Equal("EM_EXECUCAO", atualizado!.Status);
         Assert.Equal(2, atualizado.Historico!.Count);
-        Assert.Equal("ABERTO", atualizado.Historico[1].StatusAnterior);
+        Assert.Equal("PENDENTE", atualizado.Historico[1].StatusAnterior);
     }
 
     [Fact]
@@ -212,31 +217,38 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         var gestor = await factory.CriarGestorAsync();
         var request = Novo();
         var chamado = await AbrirAsync(cidadao, request);
-        await MudarStatusAsync(gestor, chamado.Id, "EM_ANALISE");
-        var busca = Uri.EscapeDataString(request.Titulo);
+        await MudarStatusAsync(gestor, chamado.Id, "EM_EXECUCAO");
+        const string busca = "Buraco";
 
         // Act
-        var emAnalise = await cidadao.GetFromJsonAsync<PaginaResponse<ChamadoResponse>>($"/api/v1/chamados?status=EM_ANALISE&busca={busca}");
-        var abertos = await cidadao.GetFromJsonAsync<PaginaResponse<ChamadoResponse>>($"/api/v1/chamados?status=ABERTO&busca={busca}");
+        var emExecucaoResponse = await cidadao.GetAsync(
+            $"/api/v1/chamados?apenasMeus=true&status=EM_EXECUCAO&busca={busca}");
+        Assert.True(emExecucaoResponse.IsSuccessStatusCode, await emExecucaoResponse.Content.ReadAsStringAsync());
+        var emExecucao = await emExecucaoResponse.Content.ReadFromJsonAsync<PaginaResponse<ChamadoResponse>>();
+        var pendentesResponse = await cidadao.GetAsync(
+            $"/api/v1/chamados?apenasMeus=true&status=PENDENTE&busca={busca}");
+        Assert.True(pendentesResponse.IsSuccessStatusCode, await pendentesResponse.Content.ReadAsStringAsync());
+        var pendentes = await pendentesResponse.Content.ReadFromJsonAsync<PaginaResponse<ChamadoResponse>>();
 
         // Assert
-        Assert.Equal(1, emAnalise!.TotalElements);
-        Assert.Equal(0, abertos!.TotalElements);
-        Assert.Null(emAnalise.Content[0].FotoBase64); // a lista vem sem foto por padrão
+        Assert.Equal(1, emExecucao!.TotalElements);
+        Assert.Equal(0, pendentes!.TotalElements);
+        Assert.Null(emExecucao.Content[0].FotoBase64);
     }
 
     [Fact]
-    public async Task Excluir_PeloAutorComChamadoAberto_DeveRetornar204()
+    public async Task Excluir_PeloGestor_DeveRetornar204()
     {
         // Arrange
+        var gestor = await factory.CriarGestorAsync();
         var (autor, _) = await factory.CriarCidadaoAsync();
         var chamado = await AbrirAsync(autor);
 
         // Act
-        var response = await autor.DeleteAsync($"/api/v1/chamados/{chamado.Id}");
+        var response = await gestor.DeleteAsync($"/api/v1/chamados/{chamado.Id}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await autor.GetAsync($"/api/v1/chamados/{chamado.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await gestor.GetAsync($"/api/v1/chamados/{chamado.Id}")).StatusCode);
     }
 }

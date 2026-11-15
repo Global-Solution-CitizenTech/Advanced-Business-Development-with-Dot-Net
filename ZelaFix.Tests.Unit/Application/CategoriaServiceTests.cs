@@ -26,7 +26,7 @@ public class CategoriaServiceTests
         ExisteNome(true);
 
         // Act
-        var act = () => Criar().CreateAsync(new CategoriaRequest { Nome = "Buraco" });
+        var act = () => Criar().CreateAsync(new CategoriaRequest { Nome = "ILUMINACAO_PUBLICA" });
 
         // Assert
         await Assert.ThrowsAsync<ConflitoException>(act);
@@ -42,10 +42,10 @@ public class CategoriaServiceTests
             .ReturnsAsync((Categoria c, CancellationToken _) => c);
 
         // Act
-        var resposta = await Criar().CreateAsync(new CategoriaRequest { Nome = "  Buraco na Rua " });
+        var resposta = await Criar().CreateAsync(new CategoriaRequest { Nome = "  iluminacao_publica " });
 
         // Assert
-        Assert.Equal("Buraco na Rua", resposta.Nome);
+        Assert.Equal("ILUMINACAO_PUBLICA", resposta.Nome);
         _repo.Verify(r => r.AddAsync(It.IsAny<Categoria>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 

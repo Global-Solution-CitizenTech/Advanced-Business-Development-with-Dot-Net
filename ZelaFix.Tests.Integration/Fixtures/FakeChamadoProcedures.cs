@@ -10,11 +10,12 @@ namespace ZelaFix.Tests.Integration.Fixtures;
 public sealed class FakeChamadoProcedures(ZelaFixDbContext db) : IChamadoProcedures
 {
     public async Task<int> AbrirChamadoAsync(string titulo, string descricao, byte[] foto,
-        int usuarioId, int enderecoId, int categoriaId, CancellationToken ct = default)
+        int usuarioId, int enderecoId, int categoriaId, int prioridadeId, int orgaoId,
+        CancellationToken ct = default)
     {
-        var aberto = await db.Status.FirstAsync(s => s.Nome == Status.Aberto, ct);
-        var chamado = new Chamado(titulo, descricao, foto, usuarioId, enderecoId, categoriaId);
-        chamado.RegistrarHistorico(aberto.Id, usuarioId, "Ocorrência registrada pelo cidadão.");
+        var pendente = await db.Status.FirstAsync(s => s.Nome == Status.Pendente, ct);
+        var chamado = new Chamado(titulo, descricao, foto, usuarioId, enderecoId, categoriaId, prioridadeId, orgaoId);
+        chamado.RegistrarHistorico(pendente.Id, usuarioId, "Ocorrência registrada pelo cidadão.");
 
         db.Chamados.Add(chamado);
         await db.SaveChangesAsync(ct);

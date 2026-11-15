@@ -6,7 +6,7 @@ namespace ZelaFix.Tests.Unit.Domain;
 public class StatusTests
 {
     [Theory]
-    [InlineData("ABERTO", "ABERTO")]
+    [InlineData("PENDENTE", "PENDENTE")]
     [InlineData("Em Análise", "EM_ANALISE")]
     [InlineData(" em-execucao ", "EM_EXECUCAO")]
     public void Canonico_ComVariacoesValidas_DeveRetornarCodigoOficial(string entrada, string esperado)

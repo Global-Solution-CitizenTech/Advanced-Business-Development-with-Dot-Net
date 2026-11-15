@@ -63,8 +63,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         db.Status.AddRange(Status.Todos.Select(nome => new Status(nome)));
 
-        var categoria = new Categoria("Buraco na Rua");
+        var categoria = new Categoria("VIAS_E_PAVIMENTACAO");
         db.Categorias.Add(categoria);
+        db.Prioridades.AddRange(Prioridade.Nomes.Select(nome => new Prioridade(nome)));
+        db.OrgaosGoverno.AddRange(OrgaoGoverno.Nomes.Select(nome => new OrgaoGoverno(nome)));
 
         var estado = new Estado("São Paulo");
         db.Estados.Add(estado);

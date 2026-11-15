@@ -53,7 +53,7 @@ public class CategoriaIntegrationTests(CustomWebApplicationFactory factory)
     {
         // Arrange
         var gestor = await factory.CriarGestorAsync();
-        var request = new CategoriaRequest { Nome = $"Categoria {Guid.NewGuid():N}"[..20] };
+        var request = new CategoriaRequest { Nome = "ILUMINACAO_PUBLICA" };
 
         // Act
         var primeira = await gestor.PostAsJsonAsync("/api/v1/categorias", request);
@@ -77,5 +77,16 @@ public class CategoriaIntegrationTests(CustomWebApplicationFactory factory)
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         var corpo = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal("nome", corpo.GetProperty("erros")[0].GetProperty("campo").GetString());
+    }
+
+    [Fact]
+    public async Task Criar_ComNomeForaDoCatalogo_DeveRetornar400()
+    {
+        var gestor = await factory.CriarGestorAsync();
+
+        var response = await gestor.PostAsJsonAsync(
+            "/api/v1/categorias", new CategoriaRequest { Nome = "Categoria personalizada" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

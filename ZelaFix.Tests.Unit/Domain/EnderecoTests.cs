@@ -40,7 +40,7 @@ public class EnderecoChamadoPrioridadeTests
     public void Chamado_SemFoto_DeveLancarDomainException()
     {
         // Arrange / Act
-        var act = () => new Chamado("Buraco na rua", "Descrição suficiente", [], 1, 1, 1);
+        var act = () => new Chamado("Buraco na rua", "Descrição suficiente", [], 1, 1, 1, 1, 1);
 
         // Assert
         Assert.Throws<DomainException>(act);
@@ -53,7 +53,7 @@ public class EnderecoChamadoPrioridadeTests
         var antes = DateTime.UtcNow.AddSeconds(-1);
 
         // Act
-        var chamado = new Chamado("Buraco na rua", "Descrição suficiente", [1, 2, 3], 1, 1, 1);
+        var chamado = new Chamado("Buraco na rua", "Descrição suficiente", [1, 2, 3], 1, 1, 1, 1, 1);
 
         // Assert
         Assert.True(chamado.DataAbertura >= antes);
