@@ -4,7 +4,8 @@
 public interface IChamadoProcedures
 {
     Task<int> AbrirChamadoAsync(string titulo, string descricao, byte[] foto,
-        int usuarioId, int enderecoId, int categoriaId, CancellationToken ct = default);
+        int usuarioId, int enderecoId, int categoriaId, int prioridadeId, int orgaoId,
+        CancellationToken ct = default);
 
     Task AtualizarStatusAsync(int chamadoId, int statusId, int fiscalId, string observacoes, CancellationToken ct = default);
 

@@ -26,7 +26,7 @@ internal static partial class OracleErroMapper
             20002 => new KeyNotFoundException(mensagem),
             20005 or 20012 => new AcessoNegadoException(mensagem),
             20010 or 20011 => new ConflitoException(mensagem),
-            20001 or 20003 or 20004 => new DomainException(mensagem),
+            20001 or 20003 or 20004 or 20008 or 20009 => new DomainException(mensagem),
             _ => ex
         };
     }

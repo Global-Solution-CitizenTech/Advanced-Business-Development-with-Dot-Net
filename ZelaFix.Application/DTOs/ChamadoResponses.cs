@@ -11,7 +11,9 @@ public sealed record HistoricoResponse(
 public sealed record ChamadoResponse(
     int Id, string Protocolo, string Titulo, string Descricao,
     int CategoriaId, string Categoria,
-    string Status, string Prioridade,
+    string Status,
+    int PrioridadeId, string Prioridade,
+    int OrgaoId, string Orgao,
     int ApoiosCount, bool ApoiadoPeloUsuario,
     LocalizacaoResponse Localizacao,
     string? FotoBase64, string? FotoContentType,

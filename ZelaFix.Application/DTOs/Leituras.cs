@@ -3,6 +3,8 @@
 public sealed record ChamadoLeitura(
     int Id, string Titulo, string Descricao,
     int CategoriaId, string Categoria,
+    int PrioridadeId, string Prioridade,
+    int OrgaoId, string Orgao,
     int AutorId, string AutorNome,
     string? Status, int Apoios, int ApoiosDoUsuario,
     string Cep, string Rua, string Numero, string Referencia,

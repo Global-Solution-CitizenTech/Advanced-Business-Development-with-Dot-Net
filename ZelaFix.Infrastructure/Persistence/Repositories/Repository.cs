@@ -51,4 +51,7 @@ public class Repository<T>(ZelaFixDbContext context) : IRepository<T> where T : 
 
     public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default) =>
         await _set.AnyAsync(predicate, ct);
+
+    public async Task<int> CountAsync(Expression<Func<T, bool>> predicate, CancellationToken ct = default) =>
+        await _set.CountAsync(predicate, ct);
 }

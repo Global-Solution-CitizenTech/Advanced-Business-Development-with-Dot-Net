@@ -25,6 +25,14 @@ public abstract record ChamadoBaseRequest
 
     [StringLength(50, ErrorMessage = "A referência deve ter no máximo 50 caracteres.")]
     public string? Referencia { get; init; }
+
+    /// <summary>Opcional: 1 (BAIXA), 2 (MEDIA), 3 (ALTA), 4 (URGENTE). Padrão: 2 (MEDIA).</summary>
+    [Range(1, 4, ErrorMessage = "A prioridade deve estar entre 1 (BAIXA) e 4 (URGENTE).")]
+    public int? PrioridadeId { get; init; }
+
+    /// <summary>Opcional: Órgão governamental responsável. Se omitido, é atribuído automaticamente pela categoria.</summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Informe um órgão válido.")]
+    public int? OrgaoGovernoId { get; init; }
 }
 
 public sealed record CriarChamadoRequest : ChamadoBaseRequest

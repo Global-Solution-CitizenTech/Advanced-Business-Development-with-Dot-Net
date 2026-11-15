@@ -11,7 +11,8 @@ namespace ZelaFix.Infrastructure.Persistence.Procedures;
 public sealed class OracleChamadoProcedures(ZelaFixDbContext context) : IChamadoProcedures
 {
     public async Task<int> AbrirChamadoAsync(string titulo, string descricao, byte[] foto,
-        int usuarioId, int enderecoId, int categoriaId, CancellationToken ct = default)
+        int usuarioId, int enderecoId, int categoriaId, int prioridadeId, int orgaoId,
+        CancellationToken ct = default)
     {
         var id = new OracleParameter("p_id_chamado_gerado", OracleDbType.Decimal, ParameterDirection.Output);
         await ExecutarProcedureAsync("pkg_chamado_gestao.pr_abrir_chamado", ct,
@@ -21,6 +22,8 @@ public sealed class OracleChamadoProcedures(ZelaFixDbContext context) : IChamado
             Entrada("p_id_usuario", OracleDbType.Int32, usuarioId),
             Entrada("p_id_endereco", OracleDbType.Int32, enderecoId),
             Entrada("p_id_categoria", OracleDbType.Int32, categoriaId),
+            Entrada("p_id_prioridade", OracleDbType.Int32, prioridadeId),
+            Entrada("p_id_orgao", OracleDbType.Int32, orgaoId),
             id);
         return LerInteiro(id);
     }

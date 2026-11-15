@@ -47,10 +47,12 @@ public sealed class ChamadoRepository(ZelaFixDbContext context)
             ? query.OrderByDescending(c => c.Votos.Count()).ThenByDescending(c => c.Id)
             : query.OrderByDescending(c => c.DataAbertura).ThenByDescending(c => c.Id);
 
-        var itens = await Projetar(ordenada.Skip(filtro.Page * filtro.Size).Take(filtro.Size), usuarioId)
+        var page = filtro.Page ?? 0;
+        var size = filtro.Size ?? 20;
+        var itens = await Projetar(ordenada.Skip(page * size).Take(size), usuarioId)
             .ToListAsync(ct);
 
-        return PaginaResponse<ChamadoLeitura>.Criar(itens, total, filtro.Page, filtro.Size);
+        return PaginaResponse<ChamadoLeitura>.Criar(itens, total, page, size);
     }
 
     public Task<ChamadoLeitura?> ObterLeituraAsync(int id, int usuarioId, CancellationToken ct = default) =>
@@ -100,6 +102,8 @@ public sealed class ChamadoRepository(ZelaFixDbContext context)
         query.Select(c => new ChamadoLeitura(
             c.Id, c.Titulo, c.Descricao,
             c.CategoriaId, c.Categoria.Nome,
+            c.PrioridadeId, c.Prioridade.Nome,
+            c.OrgaoGovernoId, c.OrgaoGoverno.Nome,
             c.UsuarioId, c.Usuario.Nome,
             c.Historico.OrderByDescending(h => h.Id).Select(h => h.Status.Nome).FirstOrDefault(),
             c.Votos.Count(),

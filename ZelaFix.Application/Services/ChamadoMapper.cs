@@ -15,8 +15,11 @@ public static class ChamadoMapper
         Descricao: l.Descricao,
         CategoriaId: l.CategoriaId,
         Categoria: l.Categoria,
-        Status: l.Status ?? Status.Aberto,
-        Prioridade: PoliticaPrioridade.Calcular(l.Apoios),
+        Status: l.Status ?? Status.Pendente,
+        PrioridadeId: l.PrioridadeId,
+        Prioridade: l.Prioridade,
+        OrgaoId: l.OrgaoId,
+        Orgao: l.Orgao,
         ApoiosCount: l.Apoios,
         ApoiadoPeloUsuario: l.ApoiosDoUsuario > 0,
         Localizacao: new LocalizacaoResponse(
