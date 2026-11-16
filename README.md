@@ -33,39 +33,6 @@
 
 ---
 
-## 📱 Aplicativo Mobile Integrado (ZelaFix Mobile)
-
-> O aplicativo mobile desenvolvido especialmente para consumir esta API está hospedado no repositório oficial:  
-> 🔗 **[Global-Solution-CitizenTech / Mobile-Application-Development-Dot-Net](https://github.com/Global-Solution-CitizenTech/Mobile-Application-Development-Dot-Net)**
-
-### ⚙️ Configuração de Conexão Mobile ➔ Backend .NET
-Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de desenvolvimento local:
-* **Ambiente Web / Host Direto:** `http://localhost:5034/api/v1`
-* **Emulador Android Oficial:** `http://10.0.2.2:5034/api/v1`
-* **Dispositivo Físico via Expo Go:** `http://<IP_LOCAL_DA_MAQUINA>:5034/api/v1` (com porta 5034 liberada no firewall)
-
----
-
-### 🌟 Ajustes e Otimizações de Integração Realizados
-1. **Suporte a Miniaturas Fotográficas (`GET /api/v1/chamados?incluirFoto=true`):**
-   - Na listagem de chamados (feed "Radar do Bairro"), a consulta aceita o parâmetro booleano opcional `incluirFoto`.
-   - Quando `true`, a API projeta os bytes da foto binária persistida em `BLOB` como uma string Base64 compacta no DTO `ChamadoResumoResponse`, permitindo renderização imediata de miniaturas nos cards do app sem requisições HTTP adicionais.
-   - Quando omitido ou `false`, os bytes da foto são suprimidos para máxima economia de banda em conexões móveis limitadas.
-2. **Trilha Histórica de Protocolo Reversa (`HIST_CHAMADO`):**
-   - Na tela de detalhes da ocorrência, a trilha de andamento do protocolo cívico é ordenada com as movimentações mais recentes exibidas no topo, proporcionando ao cidadão visualização imediata da última ação tomada pela prefeitura.
-3. **Estabilidade de Renderização em Listas (React Native `FlatList`):**
-   - Chaves compostas normalizadas para evitar conflitos de reconciliação virtual (`keyExtractor`), eliminando warnings de elementos duplicados.
-4. **Painel Analítico e Métricas de Bairro:**
-   - Consumo integrado dos endpoints `GET /api/v1/dashboard/estatisticas` e `GET /api/v1/dashboard/bairros` para alimentação dos gráficos e indicadores de atendimento municipal.
-5. **Autenticação Segura JWT com Persistência em `SecureStore`:**
-   - Fluxo de login e cadastro com validação de CEP via ViaCEP, injeção de token JWT Bearer nos interceptors Axios e renovação transparente.
-6. **Proteção Contra Duplicidade com `Idempotency-Key`:**
-   - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` nas operações de criação de chamados e alteração de status, garantindo segurança contra toques repetidos ou reconexões de rede instável.
-7. **Tratamento Amigável de Erros (RFC 7807 Problem Details):**
-   - A API devolve objetos padronizados de erro com campo `detail`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
-
----
-
 ## 💡 Sobre o Projeto & Funcionalidades
 
 O **ZelaFix** é uma solução de **CitizenTech** alinhada ao **Objetivo de Desenvolvimento Sustentável 11 (ODS 11 — Cidades e Comunidades Sustentáveis)** da ONU. Seu propósito fundamental é transformar a zeladoria urbana municipal através da colaboração cívica em tempo real, conectando munícipes e poder público em um fluxo transparente, auditável e orientado a dados.
@@ -325,6 +292,39 @@ Todas as exceções não tratadas e falhas de invariantes de negócio são captu
 ```
 
 ---
+
+## 📱 Aplicativo Mobile Integrado (ZelaFix Mobile)
+
+> O aplicativo mobile desenvolvido especialmente para consumir esta API está hospedado no repositório oficial:  
+> 🔗 **[Global-Solution-CitizenTech / Mobile-Application-Development-Dot-Net](https://github.com/Global-Solution-CitizenTech/Mobile-Application-Development-Dot-Net)**
+
+### ⚙️ Configuração de Conexão Mobile ➔ Backend .NET
+Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de desenvolvimento local:
+* **Ambiente Web / Host Direto:** `http://localhost:5034/api/v1`
+* **Emulador Android Oficial:** `http://10.0.2.2:5034/api/v1`
+* **Dispositivo Físico via Expo Go:** `http://<IP_LOCAL_DA_MAQUINA>:5034/api/v1` (com porta 5034 liberada no firewall)
+
+---
+
+### 🌟 Ajustes e Otimizações de Integração Realizados
+1. **Suporte a Miniaturas Fotográficas (`GET /api/v1/chamados?incluirFoto=true`):**
+   - Na listagem de chamados (feed "Radar do Bairro"), a consulta aceita o parâmetro booleano opcional `incluirFoto`.
+   - Quando `true`, a API projeta os bytes da foto binária persistida em `BLOB` como uma string Base64 compacta no DTO `ChamadoResumoResponse`, permitindo renderização imediata de miniaturas nos cards do app sem requisições HTTP adicionais.
+   - Quando omitido ou `false`, os bytes da foto são suprimidos para máxima economia de banda em conexões móveis limitadas.
+2. **Trilha Histórica de Protocolo Reversa (`HIST_CHAMADO`):**
+   - Na tela de detalhes da ocorrência, a trilha de andamento do protocolo cívico é ordenada com as movimentações mais recentes exibidas no topo, proporcionando ao cidadão visualização imediata da última ação tomada pela prefeitura.
+3. **Estabilidade de Renderização em Listas (React Native `FlatList`):**
+   - Chaves compostas normalizadas para evitar conflitos de reconciliação virtual (`keyExtractor`), eliminando warnings de elementos duplicados.
+4. **Painel Analítico e Métricas de Bairro:**
+   - Consumo integrado dos endpoints `GET /api/v1/dashboard/estatisticas` e `GET /api/v1/dashboard/bairros` para alimentação dos gráficos e indicadores de atendimento municipal.
+5. **Autenticação Segura JWT com Persistência em `SecureStore`:**
+   - Fluxo de login e cadastro com validação de CEP via ViaCEP, injeção de token JWT Bearer nos interceptors Axios e renovação transparente.
+6. **Proteção Contra Duplicidade com `Idempotency-Key`:**
+   - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` nas operações de criação de chamados e alteração de status, garantindo segurança contra toques repetidos ou reconexões de rede instável.
+7. **Tratamento Amigável de Erros (RFC 7807 Problem Details):**
+   - A API devolve objetos padronizados de erro com campo `detail`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
+
+--- 
 
 ## 📋 Catálogo Completo de Endpoints REST (`/api/v1`)
 
