@@ -2,7 +2,7 @@
 
 > **Advanced Business Development with .NET** — FIAP (2º Ano ADS / 2TDSPG — Global Solution 2026 - 2º Semestre)  
 > 🌐 **API em Produção (Render / Swagger UI):** https://advanced-business-development-with-dot.onrender.com/  
-> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **80 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
+> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **105 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
 
 ---
 
@@ -15,7 +15,7 @@
 ![Serilog](https://img.shields.io/badge/Serilog-Structured%20Logs-000000?logo=serilog&logoColor=white&style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-Bearer%20HS256-orange?style=for-the-badge)
 ![BCrypt](https://img.shields.io/badge/BCrypt-Security-green?style=for-the-badge)
-![xUnit](https://img.shields.io/badge/xUnit-77%20Tests%20Passing-brightgreen?style=for-the-badge)
+![xUnit](https://img.shields.io/badge/xUnit-105%20Tests%20Passing-brightgreen?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Oracle%20Free-2496ED?logo=docker&logoColor=white&style=for-the-badge)
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?logo=swagger&logoColor=black&style=for-the-badge)
 ![ODS 11](https://img.shields.io/badge/CitizenTech-ODS%2011%20Cidades%20Sustent%C3%A1veis-blue?style=for-the-badge)
@@ -142,7 +142,10 @@ O banco de dados do **ZelaFix** é normalizado em 3ª Forma Normal (3FN), garant
 
 ### 📸 Evidências das Tabelas Populadas no Oracle Database (SQL Developer / Evidências)
 
-Abaixo constam as capturas de tela e placeholders organizados para conferência estrutural do banco de dados Oracle oficial da solução:
+Abaixo constam as capturas de tela reais do banco de dados Oracle 19c oficial da solução após migração automática (`DbInitializer`) e execução dos fluxos:
+
+* **Visão Geral de Todas as Tabelas no Schema (`USER_TABLES`):**  
+  ![Todas as Tabelas](docs/todas-tabelas.png)
 
 #### 1. Chamados Urbanos, Histórico de Tramitação e Votos Comunitários
 * **Tabela `CHAMADO`:** Ocorrências urbanas com foto em BLOB e chaves estrangeiras:  
@@ -158,15 +161,11 @@ Abaixo constam as capturas de tela e placeholders organizados para conferência 
 * **Tabela `TELEFONE`:** Contatos telefônicos vinculados aos usuários:  
   ![Tabela TELEFONE](docs/telefones.png)
 
-#### 3. Domínios de Catálogo, Órgãos e Parametrizações
+#### 3. Domínios de Catálogo e Estados
 * **Tabela `CATEGORIA`:** Tipologias oficiais de zeladoria com check constraints:  
   ![Tabela CATEGORIA](docs/categorias.png)
 * **Tabela `STATUS`:** Estados operacionais finitos (`PENDENTE` a `CONCLUIDO`):  
   ![Tabela STATUS](docs/status.png)
-* **Tabela `PRIORIDADE`:** Níveis de urgência de atendimento municipal:  
-  ![Tabela PRIORIDADE](docs/prioridades.png)
-* **Tabela `ORGAO_GOVERNO`:** Secretarias e departamentos municipais cadastrados:  
-  ![Tabela ORGAO_GOVERNO](docs/orgaos.png)
 
 #### 4. Estrutura Territorial e Resolução de Localidades
 * **Tabela `ENDERECO`:** Logradouros normalizados com CEP e ponto de referência:  
@@ -206,27 +205,27 @@ ZelaFix/
 │   └── Services/                   # Interfaces e Implementações dos Serviços de Aplicação (Auth, Categoria, Chamado, ViaCEP)
 │
 ├── ZelaFix.Infrastructure/         # Camada de Infraestrutura: EF Core Oracle
-│   ├── Persistence/                # ZelaFixDbContext, OracleMigrations, Repositórios Concretos
+│   ├── Persistence/                # ZelaFixDbContext, DbInitializer, Migrations Oracle
 │   │   ├── Configurations/         # Fluent API isolada (Cadastro, Chamado, Localizacao, Usuario)
 │   │   └── Repositories/           # Implementações Repository<T>, ChamadoRepository, UsuarioRepository, UnitOfWork
-│   └── DependencyInjection.cs      # Injeção de dependências da infraestrutura
+│   └── DependencyInjection.cs      # Injeção de dependências (Oracle 19c SQL compatibility)
 │
 ├── ZelaFix.Api/                    # Camada de Apresentação & Hosting: Minimal APIs, Segurança e Observabilidade
-│   ├── Endpoints/                  # Mapeamento modularizado (Auth, Categoria, Chamado)
+│   ├── Endpoints/                  # Mapeamento modularizado (Auth/Usuários, Categorias, Chamados)
 │   ├── Exceptions/                 # GlobalExceptionHandler (RFC 7807 Problem Details)
 │   ├── Extensions/                 # ServiceCollectionExtensions, RateLimitingExtensions, HealthExtensions
 │   ├── Filters/                    # ValidationFilter (validação automática de DataAnnotations no pipeline)
-│   ├── Health/                     # OracleDbHealthCheck, ViaCepHealthCheck, HealthResponseWriter
+│   ├── Health/                     # OracleDbHealthCheck, ViaCepHealthCheck, HealthResponseWriter, HealthChecksDocumentFilter
 │   ├── Idempotency/                # IdempotencyFilter, MemoryIdempotencyStore (Header Idempotency-Key)
 │   ├── Middleware/                 # CorrelationIdMiddleware (rastreabilidade distribuída X-Correlation-ID)
 │   └── Security/                   # AuthorizationPolicies (GestorOnly), BearerSecurityOperationFilter
 │
-├── ZelaFix.Tests.Unit/             # Suíte de Testes Unitários xUnit (42 testes — Domínio e Aplicação com Moq)
-│   ├── Application/                # AuthServiceTests, CategoriaServiceTests, ChamadoServiceTests, FotoImagemTests, TokenServiceTests
-│   └── Domain/                     # EnderecoTests, StatusTests, UsuarioTests
+├── ZelaFix.Tests.Unit/             # Suíte de Testes Unitários xUnit (53 testes — Domínio e Aplicação com Moq)
+│   ├── Application/                # AuthServiceTests, CategoriaServiceTests, ChamadoServiceTests, FotoImagemTests, TokenServiceTests, ViaCepAndRegisterTests
+│   └── Domain/                     # EnderecoTests, StatusTests, UsuarioTests, DomainEntitiesTests
 │
-└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (35 testes — WebApplicationFactory e InMemory DB)
-    ├── Endpoints/                  # AuthIntegrationTests, CategoriaIntegrationTests, ChamadoIntegrationTests, InfraestruturaIntegrationTests, ObservabilityAndHateoasIntegrationTests
+└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (52 testes — WebApplicationFactory e InMemory DB)
+    ├── Endpoints/                  # AuthIntegrationTests, CategoriaIntegrationTests, ChamadoIntegrationTests, InfraestruturaIntegrationTests, ObservabilityAndHateoasIntegrationTests, RepositoriesAndInfrastructureTests
     └── Fixtures/                   # CustomWebApplicationFactory, FakeViaCepService
 ```
 
@@ -309,31 +308,30 @@ Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de des
 
 ### 🌟 Ajustes e Otimizações de Integração Realizados
 1. **Suporte a Miniaturas Fotográficas (`GET /api/v1/chamados?incluirFoto=true`):**
-   - Na listagem de chamados (feed "Radar do Bairro"), a consulta aceita o parâmetro booleano opcional `incluirFoto`.
-   - Quando `true`, a API projeta os bytes da foto binária persistida em `BLOB` como uma string Base64 compacta no DTO `ChamadoResumoResponse`, permitindo renderização imediata de miniaturas nos cards do app sem requisições HTTP adicionais.
-   - Quando omitido ou `false`, os bytes da foto são suprimidos para máxima economia de banda em conexões móveis limitadas.
+   - Na listagem de chamados (feed "Radar do Bairro"), `ChamadoFiltro.IncluirFoto` tem padrão `true` (e aceita `incluirFoto=false` para payloads enxutos).
+   - Quando `true`, a API projeta os bytes da foto binária persistida em `BLOB` como string Base64 diretamente no campo `fotoBase64` do DTO `ChamadoResponse`, permitindo renderização imediata de miniaturas nos cards do app sem requisições HTTP adicionais.
 2. **Trilha Histórica de Protocolo Reversa (`HIST_CHAMADO`):**
-   - Na tela de detalhes da ocorrência, a trilha de andamento do protocolo cívico é ordenada com as movimentações mais recentes exibidas no topo, proporcionando ao cidadão visualização imediata da última ação tomada pela prefeitura.
+   - Na tela de detalhes da ocorrência, a trilha de andamento do protocolo cívico (`Historico`) é ordenada no repositório das movimentações mais recentes para as mais antigas, com `StatusAnterior` mapeado corretamente em [ChamadoMapper.cs](ZelaFix/ZelaFix.Application/Services/ChamadoMapper.cs).
 3. **Estabilidade de Renderização em Listas (React Native `FlatList`):**
    - Chaves compostas normalizadas para evitar conflitos de reconciliação virtual (`keyExtractor`), eliminando warnings de elementos duplicados.
-4. **Painel Analítico e Métricas de Bairro:**
-   - Consumo integrado dos endpoints `GET /api/v1/dashboard/estatisticas` e `GET /api/v1/dashboard/bairros` para alimentação dos gráficos e indicadores de atendimento municipal.
-5. **Autenticação Segura JWT com Persistência em `SecureStore`:**
-   - Fluxo de login e cadastro com validação de CEP via ViaCEP, injeção de token JWT Bearer nos interceptors Axios e renovação transparente.
-6. **Proteção Contra Duplicidade com `Idempotency-Key`:**
-   - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` nas operações de criação de chamados e alteração de status, garantindo segurança contra toques repetidos ou reconexões de rede instável.
+4. **Indicadores e Estatísticas Municipais:**
+   - Consumo integrado do endpoint `GET /api/v1/chamados/estatisticas` (e rota direta `GET /chamados/estatisticas`) para alimentação dos cards e taxa de resolução na Home do app mobile.
+5. **Autenticação Segura JWT e Compatibilidade de Rotas Diretas:**
+   - Exposição transparente de rotas diretas (`/login`, `/usuarios`, `/usuarios/me`, `/categorias/*`, `/chamados/*`) além do prefixo `/api/v1/*`, aceitando tanto payloads planos quanto objetos aninhados (`RegisterEnderecoInput`, `ddd`+`numeroTelefone`) e retornando `AuthResponse` com `usuario` e `user`.
+6. **Proteção Contra Duplicidade com `Idempotency-Key` e Toggle de Apoio:**
+   - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` em `POST /chamados` e `PATCH /chamados/{id}/status`, alterna apoio via `POST` / `DELETE /chamados/{id}/apoiar` conforme o estado atual e envia os campos completos exigidos em `PUT /chamados/{id}`.
 7. **Tratamento Amigável de Erros (RFC 7807 Problem Details):**
-   - A API devolve objetos padronizados de erro com campo `detail`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
+   - A API devolve objetos padronizados de erro com campo `detail` e dicionário `errors`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
 
 --- 
 
-## 📋 Catálogo Completo de Endpoints REST (`/api/v1`)
+## 📋 Catálogo Completo de Endpoints REST (23 Paths no Swagger)
 
-A API expõe 16 operações RESTful organizadas por agregados funcionais, documentadas interativamente via Swagger OpenAPI 3.0 na raiz (`/`).
+A API expõe **23 paths** e **34 operações** organizadas em **7 grupos** documentados interativamente via Swagger OpenAPI 3.0 na raiz (`/`): `Autenticação`, `Usuários`, `Categorias`, `Categorias (Rotas Diretas)`, `Chamados`, `Chamados (Rotas Diretas)` e `Monitoramento & Health`.
 
 ---
 
-### 🔐 1. Autenticação & Gestão de Identidade (`/api/v1/auth`)
+### 🔐 1. Autenticação (`/api/v1/auth`) & Usuários (`/login`, `/usuarios`)
 *Emissão, validação de tokens JWT (RFC 7519 / HS256) e perfil contextual do usuário.*
 
 | Método | Endpoint | Perfil / Autorização | Cabeçalhos Especiais | Descrição | Status Codes |
@@ -341,6 +339,10 @@ A API expõe 16 operações RESTful organizadas por agregados funcionais, docume
 | `POST` | `/api/v1/auth/register` | `[AllowAnonymous]` | Rate Limit (Auth) | Cadastra novo cidadão (resolve endereço via CEP) e emite token JWT | `201`, `400`, `409`, `429` |
 | `POST` | `/api/v1/auth/login` | `[AllowAnonymous]` | Rate Limit (Auth) | Autentica munícipe ou gestor por e-mail e senha, emitindo token JWT | `200`, `400`, `401`, `429` |
 | `GET` | `/api/v1/auth/me` | `[Authorize]` | `Authorization: Bearer <token>` | Retorna os dados cadastrais e perfil do usuário dono do token | `200`, `401`, `404` |
+| `POST` | `/usuarios` | `[AllowAnonymous]` | Rate Limit (Auth) | Rota direta de cadastro de cidadão (compatibilidade Swagger/Mobile) | `201`, `400`, `409`, `429` |
+| `POST` | `/login` | `[AllowAnonymous]` | Rate Limit (Auth) | Rota direta de autenticação JWT (compatibilidade Swagger/Mobile) | `200`, `400`, `401`, `429` |
+| `GET` | `/usuarios/me` | `[Authorize]` | `Authorization: Bearer <token>` | Rota direta de consulta do perfil autenticado | `200`, `401`, `404` |
+| `PUT` | `/usuarios/me` | `[Authorize]` | `Authorization: Bearer <token>` | Consulta/sincronização do perfil autenticado (compatibilidade Mobile) | `200`, `401`, `404` |
 
 ---
 
@@ -365,9 +367,9 @@ A API expõe 16 operações RESTful organizadas por agregados funcionais, docume
 | `GET` | `/api/v1/chamados` | `[Authorize]` | `Authorization: Bearer <token>` | Lista chamados paginados (página base 0) com filtros (`categoriaId`, `bairroId`, `status`, `busca`, `apenasMeus`, `incluirFoto`) | `200`, `401` |
 | `GET` | `/api/v1/chamados/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Retorna métricas consolidadas (Total, Abertos, Em Andamento, Concluídos, Rejeitados, Apoios) | `200`, `401` |
 | `GET` | `/api/v1/chamados/{id}` | `[Authorize]` | `Authorization: Bearer <token>` | Detalha a ocorrência completa com histórico de status e foto em Base64 | `200`, `401`, `404` |
-| `POST` | `/api/v1/chamados` | `[Authorize]` | `Idempotency-Key` *(opcional)* | Registra novo chamado com foto, categoria e endereço resolvido | `201`, `400`, `401` |
+| `POST` | `/api/v1/chamados` | `[Authorize]` | `Idempotency-Key` *(obrigatório)* | Registra novo chamado com foto, categoria e endereço resolvido | `201`, `400`, `401` |
 | `PUT` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Edita ocorrência (autor apenas enquanto status for `PENDENTE`) | `200`, `400`, `401`, `403`, `404` |
-| `PATCH` | `/api/v1/chamados/{id}/status` | `GestorOnly` | `Idempotency-Key` *(opcional)* | Movimenta status do chamado com parecer técnico e histórico imutável | `200`, `400`, `401`, `403`, `404` |
+| `PATCH` | `/api/v1/chamados/{id}/status` | `GestorOnly` | `Idempotency-Key` *(obrigatório)* | Movimenta status do chamado com parecer técnico e histórico imutável | `200`, `400`, `401`, `403`, `404` |
 | `POST` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Registra apoio popular (EF Core `VOTO_CHAMADO`); recalcula prioridade | `200`, `400`, `401`, `403`, `404`, `409` |
 | `DELETE` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Cancela apoio comunitário previamente concedido pelo munícipe | `200`, `401`, `404` |
 | `DELETE` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Exclui ocorrência (autor apenas enquanto estiver `PENDENTE`) | `204`, `401`, `403`, `404` |
@@ -393,39 +395,44 @@ A solução conta com uma bateria rigorosa de testes automatizados seguindo o pa
 
 ```text
 Suíte de Testes ZelaFix:
-├── ZelaFix.Tests.Unit:        43 testes passando (100% sucesso)
-└── ZelaFix.Tests.Integration: 37 testes passando (100% sucesso)
+├── ZelaFix.Tests.Unit:        53 testes passando (100% sucesso)
+└── ZelaFix.Tests.Integration: 52 testes passando (100% sucesso)
 ────────────────────────────────────────────────────────────────
-Total Geral:                   80 Testes Passando com Sucesso! (0 Falhas)
+Total Geral:                  105 Testes Passando com Sucesso! (0 Falhas)
 ```
 
 ### Cobertura de Código (Code Coverage - Cobertura XML)
 
-| Módulo / Camada | Cobertura de Linhas (Line Rate) | Cobertura de Branches (Branch Rate) | Status |
-| :--- | :---: | :---: | :---: |
-| **`ZelaFix.Api`** | **88.69%** | **55.20%** | Alta Cobertura (Endpoints, Middlewares, Filtros) |
-| **`ZelaFix.Domain`** | **86.36%** | **45.58%** | Alta Cobertura (Entidades, Invariantes, Validações) |
-| **`ZelaFix.Application`** | **76.16%** | **45.79%** | Alta Cobertura (Casos de Uso, Serviços, DTOs) |
-| **`ZelaFix.Infrastructure`** | **10.48%** | **57.69%** | Persistência Relacional / Mappings EF Core |
+| Camada / Assembly | Cobertura de Linhas (Line Rate) | Cobertura de Branches (Branch Rate) | Status de Qualidade |
+| :--- | :---: | :---: | :--- |
+| **`ZelaFix.Domain`** | **98.11%** | **86.76%** | 🟢 Excelente (Entidades ricas, Invariantes, Validações) |
+| **`ZelaFix.Api`** | **95.28%** | **72.86%** | 🟢 Excelente (Endpoints, Filtros, Middlewares, RFC 7807) |
+| **`ZelaFix.Application`** | **94.20%** | **72.50%** | 🟢 Excelente (Casos de uso, DTOs, Mappers, ViaCEP, Mídia) |
+| **`ZelaFix.Infrastructure`** | **91.73%** | **52.00%** | 🟢 Alta (Repositórios, UnitOfWork, Fluent API EF Core)* |
+
+> *Nota: Na camada `ZelaFix.Infrastructure`, classes auto-geradas de scaffolding DDL em `Persistence/Migrations` possuem `[ExcludeFromCodeCoverage]` para aferição real do código de repositórios, configurações e inicialização.*
 
 ### Detalhamento das Coberturas:
 * **Testes Unitários de Domínio (`ZelaFix.Tests.Unit/Domain`):**
   - `EnderecoTests`: validação de CEP com regex, obrigatoriedade de campos e montagem de endereço formatado.
   - `StatusTests`: garantia das transições permitidas na máquina de estados e rejeição de transições inválidas.
   - `UsuarioTests`: validação de hashing de senha com BCrypt, formato de e-mail e papéis (`Cargo`).
+  - `DomainEntitiesTests`: invariantes de `Chamado` (`AtualizarPrioridade`, `Apoiar`, bloqueio de duplicidade e validação de IDs), `Prioridade`, `OrgaoGoverno`, `Telefone` e `HashHelper`.
 * **Testes Unitários de Aplicação (`ZelaFix.Tests.Unit/Application`):**
   - `AuthServiceTests`: registro de novos munícipes, verificação de duplicidade de e-mail, login e emissão de tokens.
   - `CategoriaServiceTests`: regras de CRUD, impedimento de exclusão de categoria com vínculos operacionais.
   - `ChamadoServiceTests`: abertura com endereço via mock do ViaCEP, autorização de edição/exclusão, registro de voto de apoio e escalonamento comunitário.
   - `FotoImagemTests`: validação de mime types permitidos (JPEG, PNG, WebP) e sanitização de Base64.
   - `TokenServiceTests`: integridade e tempo de expiração das claims geradas no token JWT.
+  - `ViaCepAndRegisterTests`: integração HTTP de `ViaCepService` (sucesso, `erro: true`, `400 BadRequest`), compatibilidade de payload mobile em `RegisterRequest`, casos de borda em `FotoImagem` e `JwtSettings`.
 * **Testes de Integração HTTP (`ZelaFix.Tests.Integration`):**
   - `CustomWebApplicationFactory`: pipeline web completo com banco de dados em memória e injeção de fakes controlados (`FakeViaCepService`).
   - `AuthIntegrationTests`: fluxos ponta a ponta de `/register`, `/login` e `/me`.
   - `CategoriaIntegrationTests`: proteção RBAC (`GestorOnly` retornando 403 Forbidden para cidadão comum).
-  - `ChamadoIntegrationTests`: fluxo completo de abertura, paginação, filtros, idempotência com cabeçalho `Idempotency-Key` e tramitação de status.
+  - `ChamadoIntegrationTests`: fluxo completo de abertura, paginação, filtros (`incluirFoto=false`), idempotência com cabeçalho `Idempotency-Key` e tramitação de status com histórico reverso.
   - `ObservabilityAndHateoasIntegrationTests`: validação de propagação de `X-Correlation-ID`, formato RFC 7807 Problem Details e links hipermídia HATEOAS (`_links`).
   - `InfraestruturaIntegrationTests`: respostas dos health checks e validação de rate limiting com cabeçalho `Retry-After`.
+  - `RepositoriesAndInfrastructureTests`: cobertura direta de `Repository<T>`, `ChamadoRepository` (`MaisApoiados`, `BairroId`, `GetFotoAsync`), `UnitOfWork`, `DbInitializer`, `MemoryIdempotencyStore` e todos os mapeamentos de exceção do `GlobalExceptionHandler`.
 
 ---
 
@@ -514,7 +521,7 @@ O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure B
 ├── 🏆 [FEATURE 04] Observabilidade Corporativa e Integração com Ecossistema Mobile [AB#204]
 │   ├── 📄 [PBI-10] Observabilidade com Health Checks Integrados ao Oracle e Logging Estruturado Serilog [AB#205]
 │   ├── 📄 [PBI-11] Integração Full-Stack com App Mobile React Native e Compatibilização de Rotas [AB#206]
-│   └── 📄 [PBI-12] Dashboard Municipal e Agrupamento Estatístico de Ocorrências por Bairro [AB#207]
+│   └── 📄 [PBI-12] Estatísticas Consolidadas de Chamados e Filtros Territoriais no Radar [AB#207]
 │
 └── 🏆 [FEATURE 05] Qualidade de Software, Testes Automatizados e Governança [AB#208]
     ├── 📄 [PBI-13] Suíte de Testes Unitários de Domínio e Aplicação com xUnit no Padrão AAA e Moq [AB#209]
@@ -537,25 +544,8 @@ O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure B
 | | **PBI-09** `[#203]` | Idempotency-Key e Rate Limiting Nativo | 3 pts | 1 - Critical | `894b532` | Committed |
 | **Feature 04** `[#204]` | **PBI-10** `[#205]` | Observabilidade, Health Checks Oracle e Serilog | 3 pts | 1 - Critical | `894b532`, `cd487c4` | Committed |
 | | **PBI-11** `[#206]` | Integração Full-Stack com App Mobile React Native | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
-| | **PBI-12** `[#207]` | Dashboard Municipal e Estatísticas por Bairro | 3 pts | 1 - Critical | `894b532` | Committed |
+| | **PBI-12** `[#207]` | Estatísticas Consolidadas e Filtros Territoriais | 3 pts | 1 - Critical | `894b532`, `f5a8305` | Committed |
 | **Feature 05** `[#208]` | **PBI-13** `[#209]` | Testes Unitários com xUnit no Padrão AAA e Moq | 3 pts | 1 - Critical | `e5f9a26`, `49be863` | Committed |
 | | **PBI-14** `[#210]` | Testes de Integração com WebApplicationFactory | 3 pts | 1 - Critical | `53dd111` | Committed |
 | | **PBI-15** `[#211]` | Documentação Técnica, Swagger OpenAPI e README | 3 pts | 1 - Critical | `ee3696b`, `cd487c4` | Committed |
 | **TOTAL** | **5 Features** | **15 PBIs** | **45 pts** | — | **8 Commits Principais** | **100% Concluído** |
-
----
-
-### Roadmap de Sprints Futuras (Evolução da Plataforma)
-
-| Épico | ID | User Story Proposta | Benefício para o Cidadão / Município | Estimativa |
-| :--- | :---: | :--- | :--- | :---: |
-| **Notificações** | `US-11` | Notificações Push & Webhooks de Tramitação | Avisar automaticamente o cidadão em seu celular quando o fiscal municipal atualizar o chamado. | Sprint Futura |
-| **Mobilidade** | `US-12` | Mapa de Calor Geográfico de Ocorrências | Visualização cartográfica com clusterização dos bairros com maior criticidade de manutenção. | Sprint Futura |
-| **Gamificação Cívica**| `US-13` | Selo do Cidadão Ativo & Reconhecimento | Concessão de pontuação cívica para munícipes que colaboram ativamente com a fiscalização do seu bairro. | Sprint Futura |
-| **Integração Gov** | `US-14` | Integração via Gov.br / Certificado Digital | Suporte a login unificado governamental para cidadãos e agentes públicos estaduais/federais. | Sprint Futura |
-
----
-
-## 📜 Licença
-
-Projeto desenvolvido para fins estritamente acadêmicos e avaliativos no curso de Análise e Desenvolvimento de Sistemas da **FIAP**. Todos os direitos reservados aos integrantes do grupo.

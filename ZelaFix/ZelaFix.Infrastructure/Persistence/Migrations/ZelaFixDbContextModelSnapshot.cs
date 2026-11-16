@@ -11,6 +11,7 @@ using ZelaFix.Infrastructure.Persistence;
 namespace ZelaFix.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ZelaFixDbContext))]
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     partial class ZelaFixDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

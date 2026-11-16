@@ -5,6 +5,7 @@
 namespace ZelaFix.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     public partial class AlignWithOracleModel : Migration
     {
         /// <inheritdoc />
