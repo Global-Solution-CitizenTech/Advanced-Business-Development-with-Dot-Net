@@ -21,7 +21,6 @@ public class ChamadoServiceTests
     private readonly Mock<IRepository<HistChamado>> _historicos = new();
     private readonly Mock<IRepository<Status>> _status = new();
     private readonly Mock<IRepository<VotoChamado>> _votos = new();
-    private readonly Mock<IChamadoProcedures> _procedures = new();
     private readonly Mock<IEnderecoResolver> _enderecos = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
@@ -29,10 +28,12 @@ public class ChamadoServiceTests
     {
         _unitOfWork.Setup(u => u.ExecuteInTransactionAsync(It.IsAny<Func<Task<int>>>(), It.IsAny<CancellationToken>()))
             .Returns((Func<Task<int>> acao, CancellationToken _) => acao());
+        _unitOfWork.Setup(u => u.ExecuteInTransactionAsync(It.IsAny<Func<Task<bool>>>(), It.IsAny<CancellationToken>()))
+            .Returns((Func<Task<bool>> acao, CancellationToken _) => acao());
 
         return new ChamadoService(
             _chamados.Object, _categorias.Object, _prioridades.Object, _orgaos.Object,
-            _historicos.Object, _status.Object, _votos.Object, _procedures.Object,
+            _historicos.Object, _status.Object, _votos.Object,
             _enderecos.Object, _unitOfWork.Object, NullLogger<ChamadoService>.Instance);
     }
 
@@ -78,7 +79,7 @@ public class ChamadoServiceTests
     }
 
     [Fact]
-    public async Task ApoiarAsync_QuandoJaApoiou_NaoDeveChamarProcedure()
+    public async Task ApoiarAsync_QuandoJaApoiou_NaoDeveAdicionarVoto()
     {
         // Arrange
         ChamadoExiste(true);
@@ -89,11 +90,11 @@ public class ChamadoServiceTests
         await Criar().ApoiarAsync(1, 20);
 
         // Assert
-        _procedures.Verify(p => p.RegistrarVotoAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        _votos.Verify(v => v.AddAsync(It.IsAny<VotoChamado>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task ApoiarAsync_NoPrimeiroApoio_DeveRegistrarVotoPelaProcedure()
+    public async Task ApoiarAsync_NoPrimeiroApoio_DeveAdicionarVoto()
     {
         // Arrange
         ChamadoExiste(true);
@@ -104,7 +105,7 @@ public class ChamadoServiceTests
         await Criar().ApoiarAsync(1, 20);
 
         // Assert
-        _procedures.Verify(p => p.RegistrarVotoAsync(1, 20, It.IsAny<CancellationToken>()), Times.Once);
+        _votos.Verify(v => v.AddAsync(It.Is<VotoChamado>(v => v.ChamadoId == 1 && v.UsuarioId == 20), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -131,18 +132,20 @@ public class ChamadoServiceTests
     }
 
     [Fact]
-    public async Task AlterarStatusAsync_ComStatusValido_DeveChamarProcedureComOGestor()
+    public async Task AlterarStatusAsync_ComStatusValido_DeveRegistrarHistoricoComOGestor()
     {
         // Arrange
         LeituraDoChamado(Leitura(status: "PENDENTE"));
+        var statusEmAnalise = new Status("EM_ANALISE");
+        statusEmAnalise.DefinirIdParaTeste(2);
         _status.Setup(s => s.FirstOrDefaultAsync(It.IsAny<Expression<Func<Status, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Status("EM_ANALISE"));
+            .ReturnsAsync(statusEmAnalise);
 
         // Act
         await Criar().AlterarStatusAsync(1, new AlterarStatusRequest { Status = "Em Análise" }, 7);
 
         // Assert
-        _procedures.Verify(p => p.AtualizarStatusAsync(1, It.IsAny<int>(), 7, It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _historicos.Verify(h => h.AddAsync(It.Is<HistChamado>(h => h.ChamadoId == 1 && h.UsuarioId == 7), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -176,7 +179,7 @@ public class ChamadoServiceTests
     }
 
     [Fact]
-    public async Task CriarAsync_ComFotoInvalida_DeveLancarDomainExceptionESemChamarProcedure()
+    public async Task CriarAsync_ComFotoInvalida_DeveLancarDomainExceptionESemSalvarChamado()
     {
         // Arrange
         var request = new CriarChamadoRequest
@@ -194,34 +197,42 @@ public class ChamadoServiceTests
 
         // Assert
         await Assert.ThrowsAsync<DomainException>(act);
-        _procedures.Verify(p => p.AbrirChamadoAsync(
-            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<byte[]>(),
-            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
-            It.IsAny<CancellationToken>()), Times.Never);
+        _chamados.Verify(c => c.AddAsync(It.IsAny<Chamado>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task CriarAsync_ComDadosValidos_DeveAbrirChamadoPelaProcedure()
+    public async Task CriarAsync_ComDadosValidos_DeveSalvarChamadoERegistrarHistorico()
     {
         // Arrange
         _categorias.Setup(c => c.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Categoria("VIAS_E_PAVIMENTACAO"));
+        var endereco = new Endereco("01001000", "Praça da Sé", "10", null, 1);
+        endereco.DefinirIdParaTeste(1);
         _enderecos.Setup(e => e.ResolverAsync("01001-000", "10", null, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Endereco("01001000", "Praça da Sé", "10", null, 1));
-        _unitOfWork.Setup(u => u.ExecuteInTransactionAsync(
-                It.IsAny<Func<Task<int>>>(), It.IsAny<CancellationToken>()))
-            .Returns((Func<Task<int>> action, CancellationToken _) => action());
+            .ReturnsAsync(endereco);
+        var prioridade = new Prioridade("MEDIA");
+        prioridade.DefinirIdParaTeste(2);
         _prioridades.Setup(p => p.FirstOrDefaultAsync(
                 It.IsAny<Expression<Func<Prioridade, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Prioridade("MEDIA"));
+            .ReturnsAsync(prioridade);
+        var orgao = new OrgaoGoverno("SECRETARIA_OBRAS");
+        orgao.DefinirIdParaTeste(1);
         _orgaos.Setup(o => o.FirstOrDefaultAsync(
                 It.IsAny<Expression<Func<OrgaoGoverno, bool>>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OrgaoGoverno("SECRETARIA_OBRAS"));
-        _procedures.Setup(p => p.AbrirChamadoAsync(
-                "Buraco profundo na pista", "Descrição detalhada da ocorrência urbana.", It.IsAny<byte[]>(),
-                10, It.IsAny<int>(), 1, It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(5);
+            .ReturnsAsync(orgao);
+        var statusPendente = new Status("PENDENTE");
+        statusPendente.DefinirIdParaTeste(1);
+        _status.Setup(s => s.FirstOrDefaultAsync(
+                It.IsAny<Expression<Func<Status, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(statusPendente);
+
+        _chamados.Setup(c => c.AddAsync(It.IsAny<Chamado>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Chamado c, CancellationToken _) =>
+            {
+                c.DefinirIdParaTeste(5);
+                return c;
+            });
+
         LeituraDoChamado(Leitura(id: 5, status: "PENDENTE"));
         var request = new CriarChamadoRequest
         {
@@ -239,9 +250,23 @@ public class ChamadoServiceTests
         // Assert
         Assert.Equal(5, resposta.Id);
         Assert.Equal("PENDENTE", resposta.Status);
-        _procedures.Verify(p => p.AbrirChamadoAsync(
-            "Buraco profundo na pista", "Descrição detalhada da ocorrência urbana.", It.IsAny<byte[]>(),
-            10, It.IsAny<int>(), 1, It.IsAny<int>(), It.IsAny<int>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+        _chamados.Verify(c => c.AddAsync(It.IsAny<Chamado>(), It.IsAny<CancellationToken>()), Times.Once);
+        _historicos.Verify(h => h.AddAsync(It.IsAny<HistChamado>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ObterEstatisticas_DeveDelegarAoRepositorio()
+    {
+        // Arrange
+        var esperado = new EstatisticasResponse(10, 3, 2, 4, 1, 15);
+        _chamados.Setup(c => c.ObterEstatisticasAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(esperado);
+
+        // Act
+        var resultado = await Criar().ObterEstatisticasAsync();
+
+        // Assert
+        Assert.Equal(esperado, resultado);
+        _chamados.Verify(c => c.ObterEstatisticasAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }
