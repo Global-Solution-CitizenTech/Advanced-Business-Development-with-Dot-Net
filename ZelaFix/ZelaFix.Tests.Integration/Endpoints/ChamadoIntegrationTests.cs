@@ -64,7 +64,7 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         Assert.Equal(PngBase64, chamado.FotoBase64);
         Assert.Equal("MEDIA", chamado.Prioridade);
         Assert.Equal("SECRETARIA_OBRAS", chamado.Orgao);
-        Assert.Equal(1, chamado.Historico!.Count);
+        Assert.Single(chamado.Historico!);
     }
 
     [Fact]
@@ -234,6 +234,25 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         Assert.Equal(1, emExecucao!.TotalElements);
         Assert.Equal(0, pendentes!.TotalElements);
         Assert.Null(emExecucao.Content[0].FotoBase64);
+    }
+
+    [Fact]
+    public async Task ObterEstatisticas_DeveRetornar200EEstatisticasValidas()
+    {
+        // Arrange
+        var (cidadao, _) = await factory.CriarCidadaoAsync();
+        await AbrirAsync(cidadao);
+
+        // Act
+        var response = await cidadao.GetAsync("/api/v1/chamados/estatisticas");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var stats = await response.Content.ReadFromJsonAsync<EstatisticasResponse>();
+        Assert.NotNull(stats);
+        Assert.True(stats.Total >= 1);
+        Assert.True(stats.Abertos >= 1);
+        Assert.True(stats.TotalApoios >= 0);
     }
 
     [Fact]

@@ -43,9 +43,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(d);
             services.AddDbContext<ZelaFixDbContext>(o => o.UseInMemoryDatabase(_banco));
 
-            services.RemoveAll<IChamadoProcedures>();
-            services.AddScoped<IChamadoProcedures, FakeChamadoProcedures>();
-
             services.RemoveAll<IViaCepService>();
             services.AddSingleton<IViaCepService, FakeViaCepService>();
         });
