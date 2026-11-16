@@ -161,12 +161,15 @@ Abaixo constam as capturas de tela reais do banco de dados Oracle 19c oficial da
 * **Tabela `TELEFONE`:** Contatos telefônicos vinculados aos usuários:  
   ![Tabela TELEFONE](docs/telefones.png)
 
-#### 3. Domínios de Catálogo e Estados
+#### 3. Domínios de Catálogo, Órgãos e Parametrizações
 * **Tabela `CATEGORIA`:** Tipologias oficiais de zeladoria com check constraints:  
   ![Tabela CATEGORIA](docs/categorias.png)
 * **Tabela `STATUS`:** Estados operacionais finitos (`PENDENTE` a `CONCLUIDO`):  
   ![Tabela STATUS](docs/status.png)
-
+* **Tabela `PRIORIDADE`:** Níveis de urgência de atendimento municipal:  
+  ![Tabela PRIORIDADE](docs/prioridades.png)
+* **Tabela `ORGAO_GOVERNO`:** Secretarias e departamentos municipais cadastrados:  
+  ![Tabela ORGAO_GOVERNO](docs/orgaos.png)
 #### 4. Estrutura Territorial e Resolução de Localidades
 * **Tabela `ENDERECO`:** Logradouros normalizados com CEP e ponto de referência:  
   ![Tabela ENDERECO](docs/enderecos.png)
