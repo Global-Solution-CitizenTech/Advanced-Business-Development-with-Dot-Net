@@ -37,6 +37,31 @@ public static class AuthEndpoints
             .WithSummary("Perfil do usuário dono do token.")
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
+        // Rotas canônicas diretas para compatibilidade sem bloat com o cliente mobile
+        app.MapPost("/login", LoginAsync)
+            .AllowAnonymous()
+            .WithName("DirectLogin")
+            .WithValidation<LoginRequest>()
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
+            .ExcludeFromDescription();
+
+        app.MapPost("/usuarios", RegistrarAsync)
+            .AllowAnonymous()
+            .WithName("DirectUsuariosRegister")
+            .WithValidation<RegisterRequest>()
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
+            .ExcludeFromDescription();
+
+        app.MapGet("/usuarios/me", ObterPerfilAsync)
+            .RequireAuthorization()
+            .WithName("DirectUsuariosMe")
+            .ExcludeFromDescription();
+
+        app.MapPut("/usuarios/me", ObterPerfilAsync)
+            .RequireAuthorization()
+            .WithName("DirectUsuariosUpdateMe")
+            .ExcludeFromDescription();
+
         return app;
     }
 

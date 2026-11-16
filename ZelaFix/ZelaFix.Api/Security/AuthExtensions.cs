@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ZelaFix.Api.Exceptions;
 using ZelaFix.Api.Security;
 using ZelaFix.Application.Auth;
 using ZelaFix.Application.Services.Implementations;
@@ -37,6 +38,32 @@ public static class AuthExtensions
                     ClockSkew = TimeSpan.FromSeconds(30),
                     RoleClaimType = ClaimsNomes.Perfil,
                     NameClaimType = ClaimsNomes.Nome
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/problem+json";
+                        var problem = ErroResposta.Criar(
+                            context.HttpContext,
+                            StatusCodes.Status401Unauthorized,
+                            "Não autorizado",
+                            "Token JWT ausente ou inválido.");
+                        await context.Response.WriteAsJsonAsync(problem, options: null, contentType: "application/problem+json");
+                    },
+                    OnForbidden = async context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        context.Response.ContentType = "application/problem+json";
+                        var problem = ErroResposta.Criar(
+                            context.HttpContext,
+                            StatusCodes.Status403Forbidden,
+                            "Acesso negado",
+                            "Usuário autenticado não possui permissão para acessar este recurso.");
+                        await context.Response.WriteAsJsonAsync(problem, options: null, contentType: "application/problem+json");
+                    }
                 };
             });
 
