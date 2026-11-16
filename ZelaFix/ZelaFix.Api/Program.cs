@@ -4,6 +4,7 @@ using ZelaFix.Api.Exceptions;
 using ZelaFix.Api.Extensions;
 using ZelaFix.Api.Middleware;
 using ZelaFix.Infrastructure;
+using ZelaFix.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,8 @@ builder.Services.AddZelaFixSwagger();
 
 var app = builder.Build();
 
+await DbInitializer.InitializeAsync(app.Services, app.Logger);
+
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
 
@@ -59,6 +62,9 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "ZelaFix API v1");
     options.DocumentTitle = "ZelaFix API";
     options.RoutePrefix = string.Empty; // Swagger UI na raiz
+    options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+    options.DisplayRequestDuration();
+    options.EnableFilter();
 });
 
 app.UseCors();

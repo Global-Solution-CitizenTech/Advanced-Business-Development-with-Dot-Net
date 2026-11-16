@@ -37,12 +37,11 @@ public static class ChamadoMapper
     private static List<HistoricoResponse> MapearHistorico(IReadOnlyList<HistoricoLeitura> historico)
     {
         var lista = new List<HistoricoResponse>(historico.Count);
-        string? anterior = null;
-
-        foreach (var h in historico)
+        for (var i = 0; i < historico.Count; i++)
         {
+            var h = historico[i];
+            var anterior = i + 1 < historico.Count ? historico[i + 1].Status : null;
             lista.Add(new HistoricoResponse(h.Id, Utc(h.Data), anterior, h.Status, h.Observacoes, h.AutorNome));
-            anterior = h.Status;
         }
 
         return lista;

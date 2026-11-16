@@ -40,20 +40,20 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
 
                     UPDATE CATEGORIA
                     SET NM_CATEGORIA = CASE NM_CATEGORIA
-                        WHEN 'Iluminação Pública' THEN 'ILUMINACAO_PUBLICA'
-                        WHEN 'Vias e Pavimentação' THEN 'VIAS_E_PAVIMENTACAO'
-                        WHEN 'Drenagem e Esgoto' THEN 'DRENAGEM_E_ESGOTO'
-                        WHEN 'Limpeza Urbana' THEN 'LIMPEZA_URBANA'
-                        WHEN 'Árvores e Parques' THEN 'ARVORES_E_PARQUES'
-                        WHEN 'Sinalização e Trânsito' THEN 'SINALIZACAO_E_TRANSITO'
+                        WHEN N'Iluminação Pública' THEN N'ILUMINACAO_PUBLICA'
+                        WHEN N'Vias e Pavimentação' THEN N'VIAS_E_PAVIMENTACAO'
+                        WHEN N'Drenagem e Esgoto' THEN N'DRENAGEM_E_ESGOTO'
+                        WHEN N'Limpeza Urbana' THEN N'LIMPEZA_URBANA'
+                        WHEN N'Árvores e Parques' THEN N'ARVORES_E_PARQUES'
+                        WHEN N'Sinalização e Trânsito' THEN N'SINALIZACAO_E_TRANSITO'
                         ELSE NM_CATEGORIA
                     END
                     WHERE NM_CATEGORIA IN (
-                        'Iluminação Pública', 'Vias e Pavimentação', 'Drenagem e Esgoto',
-                        'Limpeza Urbana', 'Árvores e Parques', 'Sinalização e Trânsito'
+                        N'Iluminação Pública', N'Vias e Pavimentação', N'Drenagem e Esgoto',
+                        N'Limpeza Urbana', N'Árvores e Parques', N'Sinalização e Trânsito'
                     );
 
-                    UPDATE STATUS SET NM_STATUS = 'PENDENTE' WHERE NM_STATUS = 'ABERTO';
+                    UPDATE STATUS SET NM_STATUS = N'PENDENTE' WHERE NM_STATUS = N'ABERTO';
                 END;
                 """);
 
@@ -271,8 +271,12 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ORGAO_GOVERNO", x => x.ID_ORGAO);
-                    table.CheckConstraint("CK_ORGAO_GOVERNO_NOME", "ORGAO_GOVERNO IN ('SECRETARIA_OBRAS', 'CET_TRANSITO', 'ILUMINACAO_PUBLICA', 'DEFESA_CIVIL', 'SUBPREFEITURA', 'SANEAMENTO_BASICO')");
                 });
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CK_ORGAO_GOVERNO_NOME",
+                table: "ORGAO_GOVERNO",
+                sql: "ORGAO_GOVERNO IN ('SECRETARIA_OBRAS', 'CET_TRANSITO', 'ILUMINACAO_PUBLICA', 'DEFESA_CIVIL', 'SUBPREFEITURA', 'SANEAMENTO_BASICO')");
 
             migrationBuilder.CreateTable(
                 name: "PRIORIDADE",
@@ -285,8 +289,12 @@ namespace ZelaFix.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PRIORIDADE", x => x.ID_PRIORIDADE);
-                    table.CheckConstraint("CK_PRIORIDADE_NOME", "NM_PRIORIDADE IN ('BAIXA', 'MEDIA', 'ALTA', 'URGENTE')");
                 });
+
+            migrationBuilder.AddCheckConstraint(
+                name: "CK_PRIORIDADE_NOME",
+                table: "PRIORIDADE",
+                sql: "NM_PRIORIDADE IN ('BAIXA', 'MEDIA', 'ALTA', 'URGENTE')");
 
             migrationBuilder.InsertData(
                 table: "ORGAO_GOVERNO",

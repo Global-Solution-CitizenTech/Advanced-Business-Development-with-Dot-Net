@@ -15,7 +15,7 @@ public static class ChamadoEndpoints
     public static IEndpointRouteBuilder MapChamadoEndpoints(this IEndpointRouteBuilder app)
     {
         MapearRotas(app.MapGroup("/api/v1/chamados").WithTags("Chamados"));
-        MapearRotas(app.MapGroup("/chamados").ExcludeFromDescription());
+        MapearRotas(app.MapGroup("/chamados").WithTags("Chamados (Rotas Diretas)"));
         return app;
     }
 

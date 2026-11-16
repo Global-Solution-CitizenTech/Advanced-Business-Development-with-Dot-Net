@@ -11,7 +11,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<ZelaFixDbContext>(options => options.UseOracle(connectionString));
+        services.AddDbContext<ZelaFixDbContext>(options =>
+            options.UseOracle(connectionString, o => o.UseOracleSQLCompatibility(OracleSQLCompatibility.DatabaseVersion19)));
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();

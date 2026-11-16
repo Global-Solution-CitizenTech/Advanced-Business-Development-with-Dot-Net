@@ -174,7 +174,7 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         var atualizado = await response.Content.ReadFromJsonAsync<ChamadoResponse>();
         Assert.Equal("EM_EXECUCAO", atualizado!.Status);
         Assert.Equal(2, atualizado.Historico!.Count);
-        Assert.Equal("PENDENTE", atualizado.Historico[1].StatusAnterior);
+        Assert.Equal("PENDENTE", atualizado.Historico[0].StatusAnterior);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
 
         // Act
         var emExecucaoResponse = await cidadao.GetAsync(
-            $"/api/v1/chamados?apenasMeus=true&status=EM_EXECUCAO&busca={busca}");
+            $"/api/v1/chamados?apenasMeus=true&status=EM_EXECUCAO&busca={busca}&incluirFoto=false");
         Assert.True(emExecucaoResponse.IsSuccessStatusCode, await emExecucaoResponse.Content.ReadAsStringAsync());
         var emExecucao = await emExecucaoResponse.Content.ReadFromJsonAsync<PaginaResponse<ChamadoResponse>>();
         var pendentesResponse = await cidadao.GetAsync(

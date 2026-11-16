@@ -1,6 +1,7 @@
 # 🏙️ ZelaFix API — Zeladoria Urbana Colaborativa & Gestão Municipal Inteligente
 
 > **Advanced Business Development with .NET** — FIAP (2º Ano ADS / 2TDSPG — Global Solution 2026 - 2º Semestre)  
+> 🌐 **API em Produção (Render / Swagger UI):** https://advanced-business-development-with-dot.onrender.com/  
 > API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **80 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
 
 ---
@@ -373,14 +374,16 @@ A API expõe 16 operações RESTful organizadas por agregados funcionais, docume
 
 ---
 
-### 📊 4. Dashboard e Métricas Municipais (`/api/v1/dashboard`)
-*Visão analítica de zeladoria urbana, indicadores consolidados e distribuição territorial por bairro.*
+### 🩺 4. Monitoramento & Health Checks (`/health`)
+*Sondas de integridade da API, Oracle Database e serviço externo ViaCEP expostas no Swagger.*
 
 | Método | Endpoint | Perfil / Autorização | Cabeçalhos Especiais | Descrição | Status Codes |
 | :---: | :--- | :---: | :---: | :--- | :---: |
-| `GET` | `/api/v1/dashboard/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Totais consolidados de chamados (Abertos, Em Execução, Concluídos, Rejeitados e Apoios) | `200`, `401` |
-| `GET` | `/api/v1/dashboard/bairros` | `[Authorize]` | `Authorization: Bearer <token>` | Agrupamento estatístico de ocorrências por bairro para alimentação de mapas de calor | `200`, `401` |
-| `GET` | `/api/v1/chamados/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Endpoint complementar de consolidação de status e apoios cívicos | `200`, `401` |
+| `GET` | `/health` | `[AllowAnonymous]` | — | Diagnóstico completo (Processo API + Oracle + ViaCEP) | `200`, `503` |
+| `GET` | `/health/ready` | `[AllowAnonymous]` | — | Readiness Probe (Conectividade Oracle Database e ViaCEP) | `200`, `503` |
+| `GET` | `/health/live` | `[AllowAnonymous]` | — | Liveness Probe (Processo ASP.NET Core ativo) | `200` |
+
+> **Compatibilidade Mobile (Rotas Diretas):** Para atender clientes móveis sem prefixo `/api/v1`, a API também expõe no Swagger as rotas `/login`, `/usuarios`, `/usuarios/me`, `/categorias/*` e `/chamados/*`.
 
 ---
 
@@ -426,7 +429,18 @@ Total Geral:                   80 Testes Passando com Sucesso! (0 Falhas)
 
 ---
 
-## 🚀 Como Executar a Aplicação Localmente
+## 🚀 Ambiente em Produção (Render) & Execução Local
+
+### 🌐 Acesso Direto em Produção (Render Cloud)
+* **URL Base / Swagger UI:** https://advanced-business-development-with-dot.onrender.com/
+* **OpenAPI JSON:** https://advanced-business-development-with-dot.onrender.com/swagger/v1/swagger.json
+* **Health Check Geral:** https://advanced-business-development-with-dot.onrender.com/health
+
+> **Nota de Infraestrutura:** O deploy em nuvem no Render utiliza o `Dockerfile` multi-stage da raiz e exige que a variável de ambiente `ConnectionStrings__ZelaFixOracle` aponte para uma instância Oracle acessível externamente (ex.: `oracle.fiap.com.br:1521/ORCL`).
+
+---
+
+## 💻 Como Executar a Aplicação Localmente
 
 ### 1. Pré-requisitos
 * [.NET 10 SDK](https://dotnet.microsoft.com/) instalado.

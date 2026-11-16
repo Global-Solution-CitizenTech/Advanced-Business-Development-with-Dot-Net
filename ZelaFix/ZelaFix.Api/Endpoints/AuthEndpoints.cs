@@ -37,30 +37,34 @@ public static class AuthEndpoints
             .WithSummary("Perfil do usuário dono do token.")
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
-        // Rotas canônicas diretas para compatibilidade sem bloat com o cliente mobile
+        // Rotas canônicas diretas para compatibilidade com cliente mobile e Swagger
         app.MapPost("/login", LoginAsync)
             .AllowAnonymous()
+            .WithTags("Usuários")
             .WithName("DirectLogin")
+            .WithSummary("[PÚBLICO] Autenticar usuário e retornar token Bearer JWT.")
             .WithValidation<LoginRequest>()
-            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
-            .ExcludeFromDescription();
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
 
         app.MapPost("/usuarios", RegistrarAsync)
             .AllowAnonymous()
+            .WithTags("Usuários")
             .WithName("DirectUsuariosRegister")
+            .WithSummary("[PÚBLICO] Criar novo usuário (cadastro de cidadão) e retornar token JWT.")
             .WithValidation<RegisterRequest>()
-            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
-            .ExcludeFromDescription();
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
 
         app.MapGet("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
+            .WithTags("Usuários")
             .WithName("DirectUsuariosMe")
-            .ExcludeFromDescription();
+            .WithSummary("[AUTENTICADO] Buscar perfil do usuário autenticado.");
 
         app.MapPut("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
+            .WithTags("Usuários")
             .WithName("DirectUsuariosUpdateMe")
-            .ExcludeFromDescription();
+            .WithSummary("[AUTENTICADO] Consultar/sincronizar perfil do usuário autenticado.");
 
         return app;
     }

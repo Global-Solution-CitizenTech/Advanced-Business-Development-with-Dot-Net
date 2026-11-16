@@ -12,7 +12,7 @@ public static class CategoriaEndpoints
     public static IEndpointRouteBuilder MapCategoriaEndpoints(this IEndpointRouteBuilder app)
     {
         MapearRotas(app.MapGroup("/api/v1/categorias").WithTags("Categorias"));
-        MapearRotas(app.MapGroup("/categorias").ExcludeFromDescription());
+        MapearRotas(app.MapGroup("/categorias").WithTags("Categorias (Rotas Diretas)"));
         return app;
     }
 
