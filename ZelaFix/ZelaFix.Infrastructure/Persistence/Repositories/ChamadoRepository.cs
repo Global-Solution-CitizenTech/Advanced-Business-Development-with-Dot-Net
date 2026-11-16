@@ -62,7 +62,8 @@ public sealed class ChamadoRepository(ZelaFixDbContext context)
     public async Task<IReadOnlyList<HistoricoLeitura>> ObterHistoricoAsync(int chamadoId, CancellationToken ct = default) =>
         await Context.Historicos.AsNoTracking()
             .Where(h => h.ChamadoId == chamadoId)
-            .OrderBy(h => h.Id)
+            .OrderByDescending(h => h.DataMudanca)
+            .ThenByDescending(h => h.Id)
             .Select(h => new HistoricoLeitura(h.Id, h.DataMudanca, h.Status.Nome, h.Observacoes, h.Usuario.Nome))
             .ToListAsync(ct);
 
@@ -81,6 +82,51 @@ public sealed class ChamadoRepository(ZelaFixDbContext context)
         return await Context.Chamados.AsNoTracking()
             .Where(c => ids.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, c => c.Foto, ct);
+    }
+
+    public async Task<EstatisticasResponse> ObterEstatisticasAsync(CancellationToken ct = default)
+    {
+        var chamadosQuery = Context.Chamados.AsNoTracking();
+        var total = await chamadosQuery.LongCountAsync(ct);
+
+        var statusChamados = await chamadosQuery
+            .Select(c => c.Historico
+                .OrderByDescending(h => h.Id)
+                .Select(h => h.Status.Nome)
+                .FirstOrDefault())
+            .ToListAsync(ct);
+
+        long abertos = 0;
+        long emAndamento = 0;
+        long resolvidos = 0;
+        long rejeitados = 0;
+
+        foreach (var st in statusChamados)
+        {
+            switch (st)
+            {
+                case Status.Pendente:
+                    abertos++;
+                    break;
+                case Status.EmAnalise:
+                case Status.EmExecucao:
+                    emAndamento++;
+                    break;
+                case Status.Concluido:
+                    resolvidos++;
+                    break;
+                case Status.Rejeitado:
+                    rejeitados++;
+                    break;
+                default:
+                    abertos++;
+                    break;
+            }
+        }
+
+        var totalApoios = await Context.Votos.AsNoTracking().LongCountAsync(ct);
+
+        return new EstatisticasResponse(total, abertos, emAndamento, resolvidos, rejeitados, totalApoios);
     }
 
     public async Task ExcluirComDependenciasAsync(int id, CancellationToken ct = default)
