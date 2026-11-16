@@ -485,27 +485,27 @@ O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure B
 ├── 🏆 [FEATURE 01] Arquitetura Limpa, Domínio Relacional e Persistência Oracle com EF Core [AB#28]
 │   ├── 📄 [PBI-01] Setup da Solução .NET 10, Clean Architecture e Injeção de Dependências [AB#29]
 │   ├── 📄 [PBI-02] Modelagem de Entidades Relacionais 3FN e Mapeamentos Fluent API no EF Core [AB#30]
-│   └── 📄 [PBI-03] Repositórios Especializados, Unit of Work e Persistência de Fotos em BLOB
+│   └── 📄 [PBI-03] Repositórios Especializados, Unit of Work e Persistência de Fotos em BLOB [AB#200]
 │
 ├── 🏆 [FEATURE 02] Serviços de Aplicação, Integrações Externas e Regras Cívicas [AB#31]
 │   ├── 📄 [PBI-04] Resolução Resiliente de Endereços Urbanos via HttpClient e API Externa ViaCEP [AB#32]
 │   ├── 📄 [PBI-05] Mobilização Popular, Votação Comunitária e Escalonamento Automático de Prioridade [AB#33]
-│   └── 📄 [PBI-06] Trilha de Auditoria Histórica (HIST_CHAMADO) e Transição de Status Operacional
+│   └── 📄 [PBI-06] Trilha de Auditoria Histórica (HIST_CHAMADO) e Transição de Status Operacional [AB#201]
 │
 ├── 🏆 [FEATURE 03] Minimal APIs RESTful, Segurança JWT e Resiliência HTTP [AB#34]
 │   ├── 📄 [PBI-07] Autenticação JWT Bearer HS256, Criptografia BCrypt e Controle de Acesso RBAC [AB#35]
-│   ├── 📄 [PBI-08] Endpoints de Ocorrências com Filtros Dinâmicos, Paginação e Miniaturas (incluirFoto)
-│   └── 📄 [PBI-09] Idempotência de Requisições com Header Idempotency-Key e Rate Limiting Nativo
+│   ├── 📄 [PBI-08] Endpoints de Ocorrências com Filtros Dinâmicos, Paginação e Miniaturas (incluirFoto) [AB#202]
+│   └── 📄 [PBI-09] Idempotência de Requisições com Header Idempotency-Key e Rate Limiting Nativo [AB#203]
 │
-├── 🏆 [FEATURE 04] Observabilidade Corporativa e Integração com Ecossistema Mobile
-│   ├── 📄 [PBI-10] Observabilidade com Health Checks Integrados ao Oracle e Logging Estruturado Serilog
-│   ├── 📄 [PBI-11] Integração Full-Stack com App Mobile React Native e Compatibilização de Rotas
-│   └── 📄 [PBI-12] Dashboard Municipal e Agrupamento Estatístico de Ocorrências por Bairro
+├── 🏆 [FEATURE 04] Observabilidade Corporativa e Integração com Ecossistema Mobile [AB#204]
+│   ├── 📄 [PBI-10] Observabilidade com Health Checks Integrados ao Oracle e Logging Estruturado Serilog [AB#205]
+│   ├── 📄 [PBI-11] Integração Full-Stack com App Mobile React Native e Compatibilização de Rotas [AB#206]
+│   └── 📄 [PBI-12] Dashboard Municipal e Agrupamento Estatístico de Ocorrências por Bairro [AB#207]
 │
-└── 🏆 [FEATURE 05] Qualidade de Software, Testes Automatizados e Governança
-    ├── 📄 [PBI-13] Suíte de Testes Unitários de Domínio e Aplicação com xUnit no Padrão AAA e Moq
-    ├── 📄 [PBI-14] Testes de Integração com WebApplicationFactory, Banco em Memória e Contratos HTTP
-    └── 📄 [PBI-15] Documentação OpenAPI/Swagger 3.0, Diagramas de Arquitetura e README Técnico
+└── 🏆 [FEATURE 05] Qualidade de Software, Testes Automatizados e Governança [AB#208]
+    ├── 📄 [PBI-13] Suíte de Testes Unitários de Domínio e Aplicação com xUnit no Padrão AAA e Moq [AB#209]
+    ├── 📄 [PBI-14] Testes de Integração com WebApplicationFactory, Banco em Memória e Contratos HTTP [AB#210]
+    └── 📄 [PBI-15] Documentação OpenAPI/Swagger 3.0, Diagramas de Arquitetura e README Técnico [AB#211]
 ```
 
 ### 📊 Tabela Consolidada de PBIs e Rastreabilidade
@@ -514,19 +514,19 @@ O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure B
 | :--- | :--- | :--- | :---: | :---: | :--- | :---: |
 | **Feature 01** `[#28]` | **PBI-01** `[#29]` | Setup da Solução .NET 10, Clean Architecture e DI | 3 pts | 1 - Critical | `f80ba46`, `d0732c8` | Committed |
 | | **PBI-02** `[#30]` | Modelagem Relacional 3FN e Mapeamentos Fluent API | 3 pts | 1 - Critical | `d0732c8`, `ea8bdd4` | Committed |
-| | **PBI-03** | Repositórios, Unit of Work e Fotos em BLOB | 3 pts | 1 - Critical | `39a4f79` | Committed |
+| | **PBI-03** `[#200]` | Repositórios, Unit of Work e Fotos em BLOB | 3 pts | 1 - Critical | `39a4f79` | Committed |
 | **Feature 02** `[#31]` | **PBI-04** `[#32]` | Resolução de Endereços com HttpClient e ViaCEP | 3 pts | 1 - Critical | `048bef7` | Committed |
 | | **PBI-05** `[#33]` | Apoio Comunitário e Escalonamento de Prioridade | 3 pts | 1 - Critical | `048bef7`, `e3e244c` | Committed |
-| | **PBI-06** | Trilha Histórica (HIST_CHAMADO) e Transição Status | 3 pts | 1 - Critical | `048bef7`, `4d279f4` | Committed |
+| | **PBI-06** `[#201]` | Trilha Histórica (HIST_CHAMADO) e Transição Status | 3 pts | 1 - Critical | `048bef7`, `4d279f4` | Committed |
 | **Feature 03** `[#34]` | **PBI-07** `[#35]` | Autenticação JWT HS256, BCrypt e RBAC | 3 pts | 1 - Critical | `894b532` | Committed |
-| | **PBI-08** | Endpoints Ocorrências, Paginação e Miniaturas Foto | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
-| | **PBI-09** | Idempotency-Key e Rate Limiting Nativo | 3 pts | 1 - Critical | `894b532` | Committed |
-| **Feature 04** | **PBI-10** | Observabilidade, Health Checks Oracle e Serilog | 3 pts | 1 - Critical | `894b532`, `cd487c4` | Committed |
-| | **PBI-11** | Integração Full-Stack com App Mobile React Native | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
-| | **PBI-12** | Dashboard Municipal e Estatísticas por Bairro | 3 pts | 1 - Critical | `894b532` | Committed |
-| **Feature 05** | **PBI-13** | Testes Unitários com xUnit no Padrão AAA e Moq | 3 pts | 1 - Critical | `e5f9a26`, `49be863` | Committed |
-| | **PBI-14** | Testes de Integração com WebApplicationFactory | 3 pts | 1 - Critical | `53dd111` | Committed |
-| | **PBI-15** | Documentação Técnica, Swagger OpenAPI e README | 3 pts | 1 - Critical | `ee3696b`, `cd487c4` | Committed |
+| | **PBI-08** `[#202]` | Endpoints Ocorrências, Paginação e Miniaturas Foto | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
+| | **PBI-09** `[#203]` | Idempotency-Key e Rate Limiting Nativo | 3 pts | 1 - Critical | `894b532` | Committed |
+| **Feature 04** `[#204]` | **PBI-10** `[#205]` | Observabilidade, Health Checks Oracle e Serilog | 3 pts | 1 - Critical | `894b532`, `cd487c4` | Committed |
+| | **PBI-11** `[#206]` | Integração Full-Stack com App Mobile React Native | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
+| | **PBI-12** `[#207]` | Dashboard Municipal e Estatísticas por Bairro | 3 pts | 1 - Critical | `894b532` | Committed |
+| **Feature 05** `[#208]` | **PBI-13** `[#209]` | Testes Unitários com xUnit no Padrão AAA e Moq | 3 pts | 1 - Critical | `e5f9a26`, `49be863` | Committed |
+| | **PBI-14** `[#210]` | Testes de Integração com WebApplicationFactory | 3 pts | 1 - Critical | `53dd111` | Committed |
+| | **PBI-15** `[#211]` | Documentação Técnica, Swagger OpenAPI e README | 3 pts | 1 - Critical | `ee3696b`, `cd487c4` | Committed |
 | **TOTAL** | **5 Features** | **15 PBIs** | **45 pts** | — | **8 Commits Principais** | **100% Concluído** |
 
 ---
