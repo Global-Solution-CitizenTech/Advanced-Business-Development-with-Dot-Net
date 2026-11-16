@@ -8,6 +8,8 @@ public interface IChamadoService
 
     Task<ChamadoResponse?> ObterAsync(int id, int usuarioId, CancellationToken ct = default);
 
+    Task<EstatisticasResponse> ObterEstatisticasAsync(CancellationToken ct = default);
+
     Task<ChamadoResponse> CriarAsync(CriarChamadoRequest request, int usuarioId, CancellationToken ct = default);
 
     /// <exception cref="Exceptions.AcessoNegadoException">Nem autor nem gestor.</exception>

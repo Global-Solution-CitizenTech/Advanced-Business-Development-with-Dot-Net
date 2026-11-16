@@ -20,8 +20,8 @@ public sealed class ChamadoFiltro
     public bool? ApenasMeus { get; set; }
     public ChamadoOrdenacao? Ordenar { get; set; } = ChamadoOrdenacao.Recentes;
 
-    /// <summary>Inclui a foto (BLOB em Base64) em cada item da lista. Por padrão a lista vem sem foto.</summary>
-    public bool? IncluirFoto { get; set; }
+    /// <summary>Inclui a foto (BLOB em Base64) em cada item da lista. Padrão true para miniaturas no mobile.</summary>
+    public bool? IncluirFoto { get; set; } = true;
 
     public ChamadoFiltro Normalizado() => new()
     {
@@ -33,6 +33,6 @@ public sealed class ChamadoFiltro
         Busca = string.IsNullOrWhiteSpace(Busca) ? null : Busca.Trim(),
         ApenasMeus = ApenasMeus,
         Ordenar = Ordenar ?? ChamadoOrdenacao.Recentes,
-        IncluirFoto = IncluirFoto == true
+        IncluirFoto = IncluirFoto ?? true
     };
 }

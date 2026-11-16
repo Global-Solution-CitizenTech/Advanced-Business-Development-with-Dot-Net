@@ -17,7 +17,6 @@ public sealed class ChamadoService(
     IRepository<HistChamado> historicos,
     IRepository<Status> statusRepository,
     IRepository<VotoChamado> votos,
-    IChamadoProcedures procedures,
     IEnderecoResolver enderecoResolver,
     IUnitOfWork unitOfWork,
     ILogger<ChamadoService> logger) : IChamadoService
@@ -49,6 +48,9 @@ public sealed class ChamadoService(
         return ChamadoMapper.Mapear(leitura, historico, foto);
     }
 
+    public async Task<EstatisticasResponse> ObterEstatisticasAsync(CancellationToken ct = default) =>
+        await chamados.ObterEstatisticasAsync(ct);
+
     public async Task<ChamadoResponse> CriarAsync(CriarChamadoRequest request, int usuarioId, CancellationToken ct = default)
     {
         var foto = FotoImagem.Decodificar(request.FotoBase64);
@@ -69,9 +71,29 @@ public sealed class ChamadoService(
         var id = await unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var endereco = await enderecoResolver.ResolverAsync(request.Cep, request.Numero, request.Referencia, ct);
-            return await procedures.AbrirChamadoAsync(
-                request.Titulo.Trim(), request.Descricao.Trim(), foto.Bytes,
-                usuarioId, endereco.Id, request.CategoriaId, prioridadeId, orgaoId, ct);
+            var statusPendente = await ObterStatusAsync(Status.Pendente, ct);
+
+            var novoChamado = new Chamado(
+                request.Titulo.Trim(),
+                request.Descricao.Trim(),
+                foto.Bytes,
+                usuarioId,
+                endereco.Id,
+                request.CategoriaId,
+                prioridadeId,
+                orgaoId);
+
+            var criado = await chamados.AddAsync(novoChamado, ct);
+
+            var historico = new HistChamado(
+                criado.Id,
+                statusPendente.Id,
+                usuarioId,
+                "Abertura de ocorrência pelo cidadão.");
+
+            await historicos.AddAsync(historico, ct);
+
+            return criado.Id;
         }, ct);
 
         logger.LogInformation("Chamado {ChamadoId} aberto pelo cidadão {UsuarioId}.", id, usuarioId);
@@ -128,7 +150,12 @@ public sealed class ChamadoService(
             : request.Observacao.Trim();
 
         var status = await ObterStatusAsync(novo, ct);
-        await procedures.AtualizarStatusAsync(id, status.Id, gestorId, observacao, ct);
+        await unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var historico = new HistChamado(id, status.Id, gestorId, observacao);
+            await historicos.AddAsync(historico, ct);
+            return true;
+        }, ct);
 
         logger.LogInformation("Chamado {ChamadoId} movido de {De} para {Para} pelo gestor {GestorId}.",
             id, statusAtual, novo, gestorId);
@@ -145,14 +172,23 @@ public sealed class ChamadoService(
         if (atual.AutorId == usuarioId)
             throw new AcessoNegadoException("O autor não pode apoiar o próprio chamado.");
 
+        // Regra de Negócio: Chamados finalizados não podem receber apoios
+        if (atual.Status == Status.Concluido || atual.Status == Status.Rejeitado)
+            throw new ConflitoException("Não é possível apoiar um chamado concluído ou rejeitado.");
+
         // Idempotência do voto: apoiar mais de uma vez não duplica
         if (!await votos.ExistsAsync(v => v.ChamadoId == id && v.UsuarioId == usuarioId, ct))
         {
-            await procedures.RegistrarVotoAsync(id, usuarioId, ct);
+            await unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                var novoVoto = new VotoChamado(id, usuarioId);
+                await votos.AddAsync(novoVoto, ct);
+                return true;
+            }, ct);
             logger.LogInformation("Usuário {UsuarioId} apoiou o chamado {ChamadoId}.", usuarioId, id);
 
             // Regra de Negócio: Escalonamento Comunitário de Prioridade por Apoios Populares
-            var totalVotos = await votos.CountAsync(v => v.ChamadoId == id, ct) + 1;
+            var totalVotos = await votos.CountAsync(v => v.ChamadoId == id, ct);
             var chamado = await chamados.GetByIdAsync(id, ct);
             if (chamado is not null && atual.Status != Status.Concluido && atual.Status != Status.Rejeitado)
             {
@@ -169,10 +205,10 @@ public sealed class ChamadoService(
                     {
                         chamado.AtualizarPrioridade(novaP);
                         await chamados.UpdateAsync(chamado, ct);
-                        var statusAtual = await ObterStatusAsync(atual.Status ?? Status.Pendente, ct);
+                        var statusAtualEntidade = await ObterStatusAsync(atual.Status ?? Status.Pendente, ct);
                         await historicos.AddAsync(new HistChamado(
                             chamado.Id,
-                            statusAtual.Id,
+                            statusAtualEntidade.Id,
                             usuarioId,
                             $"Escalonamento comunitário: {totalVotos} apoios populares atingidos."), ct);
                         return true;

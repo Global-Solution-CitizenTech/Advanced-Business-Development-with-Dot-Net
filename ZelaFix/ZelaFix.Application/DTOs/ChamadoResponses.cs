@@ -19,4 +19,5 @@ public sealed record ChamadoResponse(
     string? FotoBase64, string? FotoContentType,
     DateTime DataAbertura, DateTime DataAtualizacao,
     int AutorId, string AutorNome,
-    IReadOnlyList<HistoricoResponse>? Historico = null);
+    IReadOnlyList<HistoricoResponse>? Historico = null,
+    IReadOnlyList<Link>? Links = null);

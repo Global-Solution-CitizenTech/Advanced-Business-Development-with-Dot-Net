@@ -15,6 +15,8 @@ public interface IChamadoRepository : IRepository<Chamado>
 
     Task<IReadOnlyDictionary<int, byte[]>> ObterFotosAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default);
 
+    Task<EstatisticasResponse> ObterEstatisticasAsync(CancellationToken ct = default);
+
     /// <summary>Remove o chamado junto com votos e histórico (o banco não tem ON DELETE CASCADE).</summary>
     Task ExcluirComDependenciasAsync(int id, CancellationToken ct = default);
 }

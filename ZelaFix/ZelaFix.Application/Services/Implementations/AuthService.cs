@@ -27,7 +27,8 @@ public sealed class AuthService(
         // Endereço, usuário e telefone são gravados juntos: se algo falhar, nada fica pela metade.
         var usuarioId = await unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            var endereco = await enderecoResolver.ResolverAsync(request.Cep, request.Numero, request.Referencia, ct);
+            var endereco = await enderecoResolver.ResolverAsync(
+                request.ObterCepResolvido(), request.ObterNumeroResolvido(), request.ObterReferenciaResolvida(), ct);
             var usuario = await usuarios.AddAsync(
                 new Usuario(request.Nome, email, request.Senha, Cargo.Cidadao, endereco.Id), ct);
             await telefones.AddAsync(new Telefone(ddd, numeroTelefone, usuario.Id), ct);

@@ -2,7 +2,8 @@
 
 public sealed record PaginaResponse<T>(
     IReadOnlyList<T> Content, long TotalElements, int TotalPages, int Size, int Number,
-    bool First, bool Last, bool Empty)
+    bool First, bool Last, bool Empty,
+    IReadOnlyList<Link>? Links = null)
 {
     public static PaginaResponse<T> Criar(IReadOnlyList<T> itens, long total, int pagina, int tamanho)
     {
@@ -13,5 +14,5 @@ public sealed record PaginaResponse<T>(
     }
 
     public PaginaResponse<TOut> Map<TOut>(Func<T, TOut> selector) =>
-        new(Content.Select(selector).ToList(), TotalElements, TotalPages, Size, Number, First, Last, Empty);
+        new(Content.Select(selector).ToList(), TotalElements, TotalPages, Size, Number, First, Last, Empty, Links);
 }
