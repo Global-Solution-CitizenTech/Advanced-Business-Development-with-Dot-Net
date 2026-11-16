@@ -33,18 +33,36 @@
 
 ---
 
-## 📱 Aplicativo Mobile Integrado
+## 📱 Aplicativo Mobile Integrado (ZelaFix Mobile)
 
 > O aplicativo mobile desenvolvido especialmente para consumir esta API está hospedado no repositório oficial:  
 > 🔗 **[Global-Solution-CitizenTech / Mobile-Application-Development-Dot-Net](https://github.com/Global-Solution-CitizenTech/Mobile-Application-Development-Dot-Net)**
->
-> **Recursos integrados ao app:**
-> - Autenticação JWT Bearer completa (Login, Cadastro de Cidadão com validação de CEP e Perfil)
-> - Abertura de ocorrências com foto em Base64 gravada em BLOB no Oracle Database
-> - Proteção contra submissão duplicada via cabeçalho HTTP `Idempotency-Key`
-> - Feed de ocorrências (Radar do Bairro) com filtros por status, categoria e busca textual
-> - Apoio comunitário (`POST /chamados/{id}/apoiar`) com escalonamento cívico automático
-> - Trilha do andamento de protocolo ordenada das movimentações mais recentes para as mais antigas
+
+### ⚙️ Configuração de Conexão Mobile ➔ Backend .NET
+Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de desenvolvimento local:
+* **Ambiente Web / Host Direto:** `http://localhost:5034/api/v1`
+* **Emulador Android Oficial:** `http://10.0.2.2:5034/api/v1`
+* **Dispositivo Físico via Expo Go:** `http://<IP_LOCAL_DA_MAQUINA>:5034/api/v1` (com porta 5034 liberada no firewall)
+
+---
+
+### 🌟 Ajustes e Otimizações de Integração Realizados
+1. **Suporte a Miniaturas Fotográficas (`GET /api/v1/chamados?incluirFoto=true`):**
+   - Na listagem de chamados (feed "Radar do Bairro"), a consulta aceita o parâmetro booleano opcional `incluirFoto`.
+   - Quando `true`, a API projeta os bytes da foto binária persistida em `BLOB` como uma string Base64 compacta no DTO `ChamadoResumoResponse`, permitindo renderização imediata de miniaturas nos cards do app sem requisições HTTP adicionais.
+   - Quando omitido ou `false`, os bytes da foto são suprimidos para máxima economia de banda em conexões móveis limitadas.
+2. **Trilha Histórica de Protocolo Reversa (`HIST_CHAMADO`):**
+   - Na tela de detalhes da ocorrência, a trilha de andamento do protocolo cívico é ordenada com as movimentações mais recentes exibidas no topo, proporcionando ao cidadão visualização imediata da última ação tomada pela prefeitura.
+3. **Estabilidade de Renderização em Listas (React Native `FlatList`):**
+   - Chaves compostas normalizadas para evitar conflitos de reconciliação virtual (`keyExtractor`), eliminando warnings de elementos duplicados.
+4. **Painel Analítico e Métricas de Bairro:**
+   - Consumo integrado dos endpoints `GET /api/v1/dashboard/estatisticas` e `GET /api/v1/dashboard/bairros` para alimentação dos gráficos e indicadores de atendimento municipal.
+5. **Autenticação Segura JWT com Persistência em `SecureStore`:**
+   - Fluxo de login e cadastro com validação de CEP via ViaCEP, injeção de token JWT Bearer nos interceptors Axios e renovação transparente.
+6. **Proteção Contra Duplicidade com `Idempotency-Key`:**
+   - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` nas operações de criação de chamados e alteração de status, garantindo segurança contra toques repetidos ou reconexões de rede instável.
+7. **Tratamento Amigável de Erros (RFC 7807 Problem Details):**
+   - A API devolve objetos padronizados de erro com campo `detail`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
 
 ---
 
@@ -355,6 +373,17 @@ A API expõe 16 operações RESTful organizadas por agregados funcionais, docume
 
 ---
 
+### 📊 4. Dashboard e Métricas Municipais (`/api/v1/dashboard`)
+*Visão analítica de zeladoria urbana, indicadores consolidados e distribuição territorial por bairro.*
+
+| Método | Endpoint | Perfil / Autorização | Cabeçalhos Especiais | Descrição | Status Codes |
+| :---: | :--- | :---: | :---: | :--- | :---: |
+| `GET` | `/api/v1/dashboard/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Totais consolidados de chamados (Abertos, Em Execução, Concluídos, Rejeitados e Apoios) | `200`, `401` |
+| `GET` | `/api/v1/dashboard/bairros` | `[Authorize]` | `Authorization: Bearer <token>` | Agrupamento estatístico de ocorrências por bairro para alimentação de mapas de calor | `200`, `401` |
+| `GET` | `/api/v1/chamados/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Endpoint complementar de consolidação de status e apoios cívicos | `200`, `401` |
+
+---
+
 ## 🧪 Suíte de Testes Automatizados (Padrão AAA & xUnit)
 
 A solução conta com uma bateria rigorosa de testes automatizados seguindo o padrão **Arrange-Act-Assert (AAA)**, cobrindo regras de negócio, invariantes de domínio, isolamento com mocks e testes de integração de ponta a ponta:
@@ -446,24 +475,59 @@ dotnet test Advanced-Business-Development-with-Dot-Net\ZelaFix\ZelaFix.sln
 
 ---
 
-## 📌 Backlog Estruturado do Projeto ZelaFix
+## 📌 Backlog Estruturado do Projeto ZelaFix (Azure Boards)
 
-O roadmap técnico e funcional do ZelaFix é organizado em Épicos de valor público, divididos entre Sprints entregues e melhorias futuras planejadas:
+O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure Boards** sob o processo Scrum, estruturado em **1 Epic**, **5 Features** e **15 Product Backlog Items (PBIs)**:
 
-### Sprints Concluídas (Global Solution 2026/2)
+```text
+[EPIC] Advanced Business Development with .NET: API RESTful ZelaFix em .NET 10, EF Core Oracle, Resiliência e Integração Mobile [AB#27]
+│
+├── 🏆 [FEATURE 01] Arquitetura Limpa, Domínio Relacional e Persistência Oracle com EF Core [AB#28]
+│   ├── 📄 [PBI-01] Setup da Solução .NET 10, Clean Architecture e Injeção de Dependências [AB#29]
+│   ├── 📄 [PBI-02] Modelagem de Entidades Relacionais 3FN e Mapeamentos Fluent API no EF Core [AB#30]
+│   └── 📄 [PBI-03] Repositórios Especializados, Unit of Work e Persistência de Fotos em BLOB
+│
+├── 🏆 [FEATURE 02] Serviços de Aplicação, Integrações Externas e Regras Cívicas [AB#31]
+│   ├── 📄 [PBI-04] Resolução Resiliente de Endereços Urbanos via HttpClient e API Externa ViaCEP [AB#32]
+│   ├── 📄 [PBI-05] Mobilização Popular, Votação Comunitária e Escalonamento Automático de Prioridade [AB#33]
+│   └── 📄 [PBI-06] Trilha de Auditoria Histórica (HIST_CHAMADO) e Transição de Status Operacional
+│
+├── 🏆 [FEATURE 03] Minimal APIs RESTful, Segurança JWT e Resiliência HTTP [AB#34]
+│   ├── 📄 [PBI-07] Autenticação JWT Bearer HS256, Criptografia BCrypt e Controle de Acesso RBAC [AB#35]
+│   ├── 📄 [PBI-08] Endpoints de Ocorrências com Filtros Dinâmicos, Paginação e Miniaturas (incluirFoto)
+│   └── 📄 [PBI-09] Idempotência de Requisições com Header Idempotency-Key e Rate Limiting Nativo
+│
+├── 🏆 [FEATURE 04] Observabilidade Corporativa e Integração com Ecossistema Mobile
+│   ├── 📄 [PBI-10] Observabilidade com Health Checks Integrados ao Oracle e Logging Estruturado Serilog
+│   ├── 📄 [PBI-11] Integração Full-Stack com App Mobile React Native e Compatibilização de Rotas
+│   └── 📄 [PBI-12] Dashboard Municipal e Agrupamento Estatístico de Ocorrências por Bairro
+│
+└── 🏆 [FEATURE 05] Qualidade de Software, Testes Automatizados e Governança
+    ├── 📄 [PBI-13] Suíte de Testes Unitários de Domínio e Aplicação com xUnit no Padrão AAA e Moq
+    ├── 📄 [PBI-14] Testes de Integração com WebApplicationFactory, Banco em Memória e Contratos HTTP
+    └── 📄 [PBI-15] Documentação OpenAPI/Swagger 3.0, Diagramas de Arquitetura e README Técnico
+```
 
-| Épico | ID | User Story / Entrega Técnica | Critério de Aceite (Gherkin / Regra) | Status |
-| :--- | :---: | :--- | :--- | :---: |
-| **Segurança & Auth** | `US-01` | Autenticação e Registro com Perfil RBAC | Munícipe pode se cadastrar informando CEP e obter token JWT HS256 assinado com perfil `CIDADAO`. | **Concluído** |
-| **Segurança & Auth** | `US-02` | Proteção de Senhas com BCrypt | Senhas devem ser salvas como hash criptográfico não reversível no Oracle. | **Concluído** |
-| **Core Zeladoria** | `US-03` | Abertura de Chamado com Foto e Endereço | Dado que o munícipe anexa foto Base64 e informa CEP, o sistema persiste em BLOB e resolve endereço via ViaCEP. | **Concluído** |
-| **Core Zeladoria** | `US-04` | Garantia de Idempotência em Chamados | Requisições com mesmo `Idempotency-Key` devolvem resultado em cache e header `Idempotent-Replayed: true`. | **Concluído** |
-| **Comunidade** | `US-05` | Voto Comunitário de Apoio à Ocorrência | Munícipes podem apoiar chamados abertos (idempotente via EF Core); autor não pode votar no próprio chamado e chamados finalizados são bloqueados. | **Concluído** |
-| **Comunidade** | `US-06` | Escalonamento Dinâmico de Prioridade | Chamados com acúmulo de apoios escalam automaticamente para prioridade `ALTA` ou `URGENTE`. | **Concluído** |
-| **Gestão Pública** | `US-07` | Tramitação de Status com Parecer Fiscal | Somente gestor público autenticado (`GestorOnly`) pode alterar status com parecer registrado em `HIST_CHAMADO`. | **Concluído** |
-| **Gestão Pública** | `US-08` | Catálogo Oficial de Categorias | Gestores mantêm categorias municipais; sistema bloqueia exclusão de categoria com chamados vinculados (409). | **Concluído** |
-| **Observabilidade** | `US-09` | Monitoramento & Health Checks | Endpoints `/health`, `/health/ready` e `/health/live` informam status do Oracle e ViaCEP em JSON. | **Concluído** |
-| **Observabilidade** | `US-10` | Rate Limiting e RFC 7807 | Limite de 100 req/min geral e 10 req/min auth com tratamento unificado Problem Details. | **Concluído** |
+### 📊 Tabela Consolidada de PBIs e Rastreabilidade
+
+| Feature Pai | ID PBI | Título do Item de Backlog | Story Points | Prioridade | Commits Vinculados | Status |
+| :--- | :--- | :--- | :---: | :---: | :--- | :---: |
+| **Feature 01** `[#28]` | **PBI-01** `[#29]` | Setup da Solução .NET 10, Clean Architecture e DI | 3 pts | 1 - Critical | `f80ba46`, `d0732c8` | Committed |
+| | **PBI-02** `[#30]` | Modelagem Relacional 3FN e Mapeamentos Fluent API | 3 pts | 1 - Critical | `d0732c8`, `ea8bdd4` | Committed |
+| | **PBI-03** | Repositórios, Unit of Work e Fotos em BLOB | 3 pts | 1 - Critical | `39a4f79` | Committed |
+| **Feature 02** `[#31]` | **PBI-04** `[#32]` | Resolução de Endereços com HttpClient e ViaCEP | 3 pts | 1 - Critical | `048bef7` | Committed |
+| | **PBI-05** `[#33]` | Apoio Comunitário e Escalonamento de Prioridade | 3 pts | 1 - Critical | `048bef7`, `e3e244c` | Committed |
+| | **PBI-06** | Trilha Histórica (HIST_CHAMADO) e Transição Status | 3 pts | 1 - Critical | `048bef7`, `4d279f4` | Committed |
+| **Feature 03** `[#34]` | **PBI-07** `[#35]` | Autenticação JWT HS256, BCrypt e RBAC | 3 pts | 1 - Critical | `894b532` | Committed |
+| | **PBI-08** | Endpoints Ocorrências, Paginação e Miniaturas Foto | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
+| | **PBI-09** | Idempotency-Key e Rate Limiting Nativo | 3 pts | 1 - Critical | `894b532` | Committed |
+| **Feature 04** | **PBI-10** | Observabilidade, Health Checks Oracle e Serilog | 3 pts | 1 - Critical | `894b532`, `cd487c4` | Committed |
+| | **PBI-11** | Integração Full-Stack com App Mobile React Native | 3 pts | 1 - Critical | `894b532`, `ee3696b` | Committed |
+| | **PBI-12** | Dashboard Municipal e Estatísticas por Bairro | 3 pts | 1 - Critical | `894b532` | Committed |
+| **Feature 05** | **PBI-13** | Testes Unitários com xUnit no Padrão AAA e Moq | 3 pts | 1 - Critical | `e5f9a26`, `49be863` | Committed |
+| | **PBI-14** | Testes de Integração com WebApplicationFactory | 3 pts | 1 - Critical | `53dd111` | Committed |
+| | **PBI-15** | Documentação Técnica, Swagger OpenAPI e README | 3 pts | 1 - Critical | `ee3696b`, `cd487c4` | Committed |
+| **TOTAL** | **5 Features** | **15 PBIs** | **45 pts** | — | **8 Commits Principais** | **100% Concluído** |
 
 ---
 
