@@ -7,6 +7,13 @@ using ZelaFix.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Compatibilidade com PaaS (Render, Cloud Run, etc.) que definem a porta via variável PORT
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://+:{port}");
+}
+
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
     .Enrich.FromLogContext()
