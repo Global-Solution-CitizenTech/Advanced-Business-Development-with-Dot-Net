@@ -1,6 +1,24 @@
-@ZelaFix_HostAddress = http://localhost:5224
+@ZelaFix_HostAddress = http://localhost:5034
 
-GET {{ZelaFix_HostAddress}}/weatherforecast/
+### Health Check Geral
+GET {{ZelaFix_HostAddress}}/health
 Accept: application/json
 
-###
+### Login JWT
+POST {{ZelaFix_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "cidadao@zelafix.com.br",
+  "senha": "Password123!"
+}
+
+### Categorias Oficiais
+GET {{ZelaFix_HostAddress}}/api/v1/categorias
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Listar Chamados Paginados
+GET {{ZelaFix_HostAddress}}/api/v1/chamados?page=0&size=10&incluirFoto=true
+Accept: application/json
+Authorization: Bearer {{token}}

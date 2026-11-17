@@ -22,7 +22,8 @@ public static class ChamadoEndpoints
     private static void MapearRotas(RouteGroupBuilder grupo)
     {
         grupo.RequireAuthorization()
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         grupo.MapGet("/", ListarAsync)
             .WithSummary("Lista chamados (categoriaId, bairroId, status, busca, apenasMeus, incluirFoto) com paginação (page começa em 0).");

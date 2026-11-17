@@ -19,7 +19,8 @@ public static class CategoriaEndpoints
     private static void MapearRotas(RouteGroupBuilder grupo)
     {
         grupo.RequireAuthorization()
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         grupo.MapGet("/", ListarAsync)
             .WithSummary("Lista todas as categorias de chamado.");

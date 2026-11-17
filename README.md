@@ -2,7 +2,7 @@
 
 > **Advanced Business Development with .NET** — FIAP (2º Ano ADS / 2TDSPG — Global Solution 2026 - 2º Semestre)  
 > 🌐 **API em Produção (Render / Swagger UI):** https://advanced-business-development-with-dot.onrender.com/  
-> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **105 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
+> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **106 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
 
 ---
 
@@ -15,7 +15,7 @@
 ![Serilog](https://img.shields.io/badge/Serilog-Structured%20Logs-000000?logo=serilog&logoColor=white&style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-Bearer%20HS256-orange?style=for-the-badge)
 ![BCrypt](https://img.shields.io/badge/BCrypt-Security-green?style=for-the-badge)
-![xUnit](https://img.shields.io/badge/xUnit-105%20Tests%20Passing-brightgreen?style=for-the-badge)
+![xUnit](https://img.shields.io/badge/xUnit-106%20Tests%20Passing-brightgreen?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Oracle%20Free-2496ED?logo=docker&logoColor=white&style=for-the-badge)
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?logo=swagger&logoColor=black&style=for-the-badge)
 ![ODS 11](https://img.shields.io/badge/CitizenTech-ODS%2011%20Cidades%20Sustent%C3%A1veis-blue?style=for-the-badge)
@@ -399,9 +399,9 @@ A solução conta com uma bateria rigorosa de testes automatizados seguindo o pa
 ```text
 Suíte de Testes ZelaFix:
 ├── ZelaFix.Tests.Unit:        53 testes passando (100% sucesso)
-└── ZelaFix.Tests.Integration: 52 testes passando (100% sucesso)
+└── ZelaFix.Tests.Integration: 53 testes passando (100% sucesso)
 ────────────────────────────────────────────────────────────────
-Total Geral:                  105 Testes Passando com Sucesso! (0 Falhas)
+Total Geral:                  106 Testes Passando com Sucesso! (0 Falhas)
 ```
 
 ### Cobertura de Código (Code Coverage - Cobertura XML)

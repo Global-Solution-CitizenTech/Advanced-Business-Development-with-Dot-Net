@@ -21,7 +21,8 @@ public static class AuthEndpoints
             .WithSummary("Cadastra um cidadão (o endereço é resolvido pelo CEP) e já devolve o token JWT.")
             .WithValidation<RegisterRequest>()
             .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         grupo.MapPost("/login", LoginAsync)
             .AllowAnonymous()
@@ -29,13 +30,15 @@ public static class AuthEndpoints
             .WithSummary("Autentica com e-mail e senha e devolve o token JWT.")
             .WithValidation<LoginRequest>()
             .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         grupo.MapGet("/me", ObterPerfilAsync)
             .RequireAuthorization()
             .WithName("MeuPerfil")
             .WithSummary("Perfil do usuário dono do token.")
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         // Rotas canônicas diretas para compatibilidade com cliente mobile e Swagger
         app.MapPost("/login", LoginAsync)
@@ -44,7 +47,9 @@ public static class AuthEndpoints
             .WithName("DirectLogin")
             .WithSummary("[PÚBLICO] Autenticar usuário e retornar token Bearer JWT.")
             .WithValidation<LoginRequest>()
-            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         app.MapPost("/usuarios", RegistrarAsync)
             .AllowAnonymous()
@@ -52,19 +57,25 @@ public static class AuthEndpoints
             .WithName("DirectUsuariosRegister")
             .WithSummary("[PÚBLICO] Criar novo usuário (cadastro de cidadão) e retornar token JWT.")
             .WithValidation<RegisterRequest>()
-            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy);
+            .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         app.MapGet("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
             .WithTags("Usuários")
             .WithName("DirectUsuariosMe")
-            .WithSummary("[AUTENTICADO] Buscar perfil do usuário autenticado.");
+            .WithSummary("[AUTENTICADO] Buscar perfil do usuário autenticado.")
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         app.MapPut("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
             .WithTags("Usuários")
             .WithName("DirectUsuariosUpdateMe")
-            .WithSummary("[AUTENTICADO] Consultar/sincronizar perfil do usuário autenticado.");
+            .WithSummary("[AUTENTICADO] Consultar/sincronizar perfil do usuário autenticado.")
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         return app;
     }

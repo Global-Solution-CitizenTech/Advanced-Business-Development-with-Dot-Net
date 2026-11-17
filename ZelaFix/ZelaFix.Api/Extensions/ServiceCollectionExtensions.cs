@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
                 Description = "Informe o token JWT obtido em POST /api/v1/auth/login."
             });
             options.OperationFilter<BearerSecurityOperationFilter>();
+            options.OperationFilter<IdempotencyHeaderOperationFilter>();
             options.DocumentFilter<HealthChecksDocumentFilter>();
         });
 

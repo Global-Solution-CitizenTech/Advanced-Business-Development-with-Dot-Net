@@ -131,4 +131,34 @@ public class ObservabilityAndHateoasIntegrationTests(CustomWebApplicationFactory
         Assert.NotEmpty(pagina.Content);
         Assert.NotNull(pagina.Content[0].Links);
     }
+
+    [Fact]
+    public async Task SwaggerJson_DeveExporTodosEndpointsIdempotencyHeaderE429()
+    {
+        // Arrange
+        var cliente = factory.CreateClient();
+
+        // Act
+        var response = await cliente.GetAsync("/swagger/v1/swagger.json");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var doc = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var paths = doc.GetProperty("paths");
+
+        Assert.True(paths.TryGetProperty("/health", out _));
+        Assert.True(paths.TryGetProperty("/login", out _));
+        Assert.True(paths.TryGetProperty("/usuarios/me", out _));
+        Assert.True(paths.TryGetProperty("/api/v1/chamados", out var chamadosPath));
+
+        var postChamados = chamadosPath.GetProperty("post");
+        var headerParams = postChamados.GetProperty("parameters").EnumerateArray().ToList();
+        Assert.Contains(headerParams, p =>
+            p.GetProperty("name").GetString() == "Idempotency-Key" &&
+            p.GetProperty("in").GetString() == "header" &&
+            p.GetProperty("required").GetBoolean());
+
+        var responses = postChamados.GetProperty("responses");
+        Assert.True(responses.TryGetProperty("429", out _));
+    }
 }

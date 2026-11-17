@@ -98,11 +98,14 @@ public sealed class IdempotencyFilter<TRequest>(
         Results.Problem(ErroResposta.Criar(http, status, titulo, mensagem));
 }
 
+public sealed class RequiresIdempotencyKeyMetadata;
+
 public static class IdempotencyExtensions
 {
     /// <summary>Exige o cabeçalho Idempotency-Key. Deve vir DEPOIS de <c>WithValidation</c>.</summary>
     public static RouteHandlerBuilder WithIdempotency<TRequest>(this RouteHandlerBuilder builder) where TRequest : class =>
         builder.AddEndpointFilter<IdempotencyFilter<TRequest>>()
+               .WithMetadata(new RequiresIdempotencyKeyMetadata())
                .ProducesProblem(StatusCodes.Status409Conflict)
                .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 }
