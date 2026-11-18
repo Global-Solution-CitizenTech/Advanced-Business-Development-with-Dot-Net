@@ -23,7 +23,8 @@ public static class ChamadoEndpoints
     {
         grupo.RequireAuthorization()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         grupo.MapGet("/", ListarAsync)
             .WithSummary("Lista chamados (categoriaId, bairroId, status, busca, apenasMeus, incluirFoto) com paginação (page começa em 0).");
@@ -61,6 +62,7 @@ public static class ChamadoEndpoints
 
         grupo.MapDelete("/{id:int}", ExcluirAsync)
             .WithSummary("Exclui um chamado (autor enquanto PENDENTE, ou gestor).")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status403Forbidden);
     }
 

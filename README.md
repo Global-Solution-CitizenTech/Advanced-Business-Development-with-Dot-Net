@@ -97,7 +97,7 @@ Cidadãos enfrentam diariamente problemas críticos na infraestrutura das cidade
 └────────────────────────────────┼────────────────────┼─────────────────────────┘
                                  │                    │
                   HttpClient     │       EF Core      │ Oracle EF Core Provider
-                 (Consulta CEP)  │      (14 Tabelas)  │ (Code-First / Mappings)
+                 (Consulta CEP)  │    (13 Entidades)  │ (Code-First / Mappings)
                                  ▼                    ▼
                         ┌─────────────────┐  ┌───────────────────────────┐
                         │   API ViaCEP    │  │   Oracle Database Free    │
@@ -119,7 +119,7 @@ O banco de dados do **ZelaFix** é normalizado em 3ª Forma Normal (3FN), garant
 
 ---
 
-### 📋 Mapeamento das 14 Tabelas Relacionais Oficiais (Oracle Database)
+### 📋 Mapeamento das 13 Tabelas Relacionais de Domínio (+ `__EFMigrationsHistory` no Oracle Database)
 
 | Tabela Oracle | Entidade C# (.NET 10) | Descrição & Propósito no Ecossistema ZelaFix |
 | :--- | :--- | :--- |
@@ -131,12 +131,12 @@ O banco de dados do **ZelaFix** é normalizado em 3ª Forma Normal (3FN), garant
 | `BAIRRO` | `Bairro` | Bairros normalizados pertencentes a uma cidade específica para agregação territorial e cálculo de criticidade. |
 | `CIDADE` | `Cidade` | Cidades federadas vinculadas a uma Unidade da Federação. |
 | `ESTADO` | `Estado` | Unidades Federativas (UF) brasileiras com nomenclatura oficial. |
-| `USUARIO` | `Usuario` | Cidadãos e Gestores públicos municipais com senhas criptografadas via BCrypt e controle de perfil (`Cargo`). |
+| `USUARIO` | `Usuario` (`Cargo` Enum) | Cidadãos e Gestores públicos municipais com senhas criptografadas via BCrypt e coluna `CARGO` (`CIDADAO` / `GESTOR`). |
 | `TELEFONE` | `Telefone` | Contatos telefônicos associados de forma 1:1 a cada usuário (`NUM_DDD` + `NUM_TEL`). |
-| `CARGO_USUARIO` | `Cargo` (Enum) | Domínio de perfis de acesso do sistema (`CIDADAO` / `GESTOR`) com constraints de integridade no banco. |
 | `STATUS` | `Status` | Máquina de estados finita do ciclo de vida operacional: `PENDENTE`, `EM_ANALISE`, `EM_EXECUCAO`, `CONCLUIDO`, `REJEITADO`. |
 | `PRIORIDADE` | `Prioridade` | Classificação de criticidade do atendimento público: `BAIXA`, `MEDIA`, `ALTA`, `URGENTE`. |
 | `ORGAO_GOVERNO` | `OrgaoGoverno` | Órgãos, secretarias e concessionárias competentes (`SECRETARIA_OBRAS`, `CET_TRANSITO`, `ILUMINACAO_PUBLICA`, `DEFESA_CIVIL`, `SUBPREFEITURA`, `SANEAMENTO_BASICO`). |
+| `__EFMigrationsHistory` | *(EF Core Metadata)* | Controle de versionamento de migrações aplicadas no schema Oracle (`Initial` e `AlignWithOracleModel`). |
 
 ---
 
@@ -227,7 +227,7 @@ ZelaFix/
 │   ├── Application/                # AuthServiceTests, CategoriaServiceTests, ChamadoServiceTests, FotoImagemTests, TokenServiceTests, ViaCepAndRegisterTests
 │   └── Domain/                     # EnderecoTests, StatusTests, UsuarioTests, DomainEntitiesTests
 │
-└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (52 testes — WebApplicationFactory e InMemory DB)
+└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (53 testes — WebApplicationFactory e InMemory DB)
     ├── Endpoints/                  # AuthIntegrationTests, CategoriaIntegrationTests, ChamadoIntegrationTests, InfraestruturaIntegrationTests, ObservabilityAndHateoasIntegrationTests, RepositoriesAndInfrastructureTests
     └── Fixtures/                   # CustomWebApplicationFactory, FakeViaCepService
 ```
@@ -251,19 +251,30 @@ Endpoints de diagnóstico serializados em JSON padronizado com tempos de respost
 ```json
 {
   "status": "Healthy",
-  "totalDuration": "00:00:00.0315200",
-  "entries": {
-    "oracle": {
+  "duration": "00:00:02.1055774",
+  "checks": [
+    {
+      "name": "self",
       "status": "Healthy",
-      "description": "Conexão com o Oracle Database estabelecida com sucesso.",
-      "duration": "00:00:00.0198000"
+      "description": "Processo da API ativo e operacional.",
+      "duration": "00:00:00.0008053",
+      "error": null
     },
-    "viacep": {
+    {
+      "name": "oracle-database",
+      "status": "Healthy",
+      "description": "Conexão com o Oracle estabelecida com sucesso.",
+      "duration": "00:00:00.6992763",
+      "error": null
+    },
+    {
+      "name": "external-service-viacep",
       "status": "Healthy",
       "description": "Serviço ViaCEP respondendo normalmente.",
-      "duration": "00:00:00.0112000"
+      "duration": "00:00:01.9069710",
+      "error": null
     }
-  }
+  ]
 }
 ```
 
@@ -282,15 +293,20 @@ Configurado no startup da API via ASP.NET Core RateLimiter:
 - Ao ultrapassar a cota, a API devolve automaticamente status `429 Too Many Requests` com o cabeçalho `Retry-After`.
 
 ### 4. Tratamento Global de Erros (RFC 7807 Problem Details)
-Todas as exceções não tratadas e falhas de invariantes de negócio são capturadas pelo `GlobalExceptionHandler`, garantindo formato padronizado de erro com diagnósticos:
+Todas as exceções não tratadas e falhas de invariantes de negócio são capturadas pelo `GlobalExceptionHandler`, garantindo formato padronizado de erro (`application/problem+json`) com diagnósticos e `correlationId`:
 ```json
 {
-  "type": "https://datatracker.ietf.org/doc/html/rfc7807",
-  "title": "Erro de Regra de Negócio",
-  "status": 400,
-  "detail": "O autor da ocorrência não pode registrar apoio no próprio chamado.",
+  "type": "about:blank",
+  "title": "Acesso negado",
+  "status": 403,
+  "detail": "O autor não pode apoiar o próprio chamado.",
   "instance": "/api/v1/chamados/10/apoiar",
-  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+  "error": "Acesso negado",
+  "message": "O autor não pode apoiar o próprio chamado.",
+  "path": "/api/v1/chamados/10/apoiar",
+  "timestamp": "2026-11-17T22:30:00.0000000Z",
+  "traceId": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+  "correlationId": "0HNQ52K4T5JN9"
 }
 ```
 
@@ -324,7 +340,7 @@ Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de des
 6. **Proteção Contra Duplicidade com `Idempotency-Key` e Toggle de Apoio:**
    - O aplicativo móvel gera UUIDs no cabeçalho HTTP `Idempotency-Key` em `POST /chamados` e `PATCH /chamados/{id}/status`, alterna apoio via `POST` / `DELETE /chamados/{id}/apoiar` conforme o estado atual e envia os campos completos exigidos em `PUT /chamados/{id}`.
 7. **Tratamento Amigável de Erros (RFC 7807 Problem Details):**
-   - A API devolve objetos padronizados de erro com campo `detail` e dicionário `errors`, consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
+   - A API devolve objetos padronizados de erro com campo `detail` (`message`) e lista `erros` (`[{ campo, mensagem }]`), consumidos diretamente pelo app para exibição de mensagens claras aos munícipes.
 
 --- 
 
@@ -375,7 +391,7 @@ A API expõe **23 paths** e **34 operações** organizadas em **7 grupos** docum
 | `PATCH` | `/api/v1/chamados/{id}/status` | `GestorOnly` | `Idempotency-Key` *(obrigatório)* | Movimenta status do chamado com parecer técnico e histórico imutável | `200`, `400`, `401`, `403`, `404` |
 | `POST` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Registra apoio popular (EF Core `VOTO_CHAMADO`); recalcula prioridade | `200`, `400`, `401`, `403`, `404`, `409` |
 | `DELETE` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Cancela apoio comunitário previamente concedido pelo munícipe | `200`, `401`, `404` |
-| `DELETE` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Exclui ocorrência (autor apenas enquanto estiver `PENDENTE`) | `204`, `401`, `403`, `404` |
+| `DELETE` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Exclui ocorrência (autor apenas enquanto estiver `PENDENTE`) | `204`, `400`, `401`, `403`, `404` |
 
 ---
 
@@ -491,6 +507,16 @@ E inicie o projeto normalmente via `dotnet run`.
 
 ---
 
+### Credenciais de Usuários de Teste (Seed Automático via `DbInitializer`)
+Na inicialização da API sobre o Oracle Database, o `DbInitializer` garante automaticamente a existência de duas contas de teste prontas para validação dos perfis RBAC no Swagger (`POST /api/v1/auth/login`) e no arquivo `ZelaFix.http`:
+
+| Perfil / Role (`Cargo`) | E-mail | Senha | Permissões no Ecossistema |
+| :--- | :--- | :--- | :--- |
+| **`CIDADAO`** | `cidadao@zelafix.com.br` | `Password123!` | Abrir chamados com foto, editar/excluir próprios chamados pendentes, apoiar chamados de vizinhos e consultar estatísticas. |
+| **`GESTOR`** | `gestor@zelafix.com.br` | `Password123!` | Todas as permissões de consulta + política `GestorOnly` (tramitar status em `PATCH /chamados/{id}/status`, gerenciar categorias em `POST/PUT/DELETE /categorias` e moderar chamados). |
+
+---
+
 ### Executando a Bateria Completa de Testes
 Para rodar toda a suíte de testes automatizados:
 ```powershell
@@ -552,3 +578,15 @@ O roadmap técnico e funcional do backend .NET ZelaFix é governado no **Azure B
 | | **PBI-14** `[#210]` | Testes de Integração com WebApplicationFactory | 3 pts | 1 - Critical | `53dd111` | Committed |
 | | **PBI-15** `[#211]` | Documentação Técnica, Swagger OpenAPI e README | 3 pts | 1 - Critical | `ee3696b`, `cd487c4` | Committed |
 | **TOTAL** | **5 Features** | **15 PBIs** | **45 pts** | — | **8 Commits Principais** | **100% Concluído** |
+
+---
+
+## 🤖 Declaração de Uso de Inteligência Artificial Generativa
+
+Em conformidade com as diretrizes institucionais da **FIAP Global Solution 2026/2 (Seção 1.11 — Política de Uso de Inteligência Artificial Generativa)**, declaramos de forma transparente as ferramentas de IA Generativa utilizadas como apoio no desenvolvimento deste repositório e suas respectivas finalidades:
+
+| Ferramenta de IA | Finalidade Específica no Projeto | Revisão e Validação Humana |
+| :--- | :--- | :--- |
+| **GitHub Copilot / Claude / Gemini** | Apoio na geração de cenários de testes unitários e de integração (padrão AAA com xUnit e Moq), sugestão de expressões regulares e revisão da documentação OpenAPI/Swagger e diagramas ASCII no `README.md`. | Todos os códigos, mapeamentos EF Core Oracle, políticas de segurança JWT/RBAC, filtros de idempotência e testes foram integralmente revisados, executados e validados tecnicamente pelos integrantes do grupo. |
+
+> **Nota sobre Uso de IA no Runtime da API .NET:** A aplicação **ZelaFix API (.NET 10)** não consome APIs externas de LLMs em tempo de execução, mantendo foco estrito nos requisitos da disciplina de *Advanced Business Development with .NET* (Minimal APIs RESTful, EF Core Oracle, JWT, Idempotência, Rate Limiting, Health Checks e Testes xUnit).

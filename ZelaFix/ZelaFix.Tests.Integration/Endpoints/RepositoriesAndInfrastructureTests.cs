@@ -69,6 +69,13 @@ public class RepositoriesAndInfrastructureTests(CustomWebApplicationFactory fact
 
         // DbInitializer com InMemory (não relacional) deve retornar sem erro
         await DbInitializer.InitializeAsync(factory.Services, NullLogger.Instance);
+
+        // Semeadura idempotente das contas padrão (CIDADAO e GESTOR)
+        var db = scope.ServiceProvider.GetRequiredService<ZelaFixDbContext>();
+        await DbInitializer.SemearUsuariosPadraoAsync(db);
+        await DbInitializer.SemearUsuariosPadraoAsync(db);
+        Assert.NotNull(await db.Usuarios.FirstOrDefaultAsync(u => u.Email == "gestor@zelafix.com.br"));
+        Assert.NotNull(await db.Usuarios.FirstOrDefaultAsync(u => u.Email == "cidadao@zelafix.com.br"));
     }
 
     [Theory]

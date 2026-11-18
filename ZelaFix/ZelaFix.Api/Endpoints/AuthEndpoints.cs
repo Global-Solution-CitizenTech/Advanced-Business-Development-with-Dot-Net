@@ -13,7 +13,9 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        var grupo = app.MapGroup("/api/v1/auth").WithTags("Autenticação");
+        var grupo = app.MapGroup("/api/v1/auth")
+            .WithTags("Autenticação")
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         grupo.MapPost("/register", RegistrarAsync)
             .AllowAnonymous()
@@ -49,7 +51,8 @@ public static class AuthEndpoints
             .WithValidation<LoginRequest>()
             .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         app.MapPost("/usuarios", RegistrarAsync)
             .AllowAnonymous()
@@ -59,7 +62,8 @@ public static class AuthEndpoints
             .WithValidation<RegisterRequest>()
             .RequireRateLimiting(RateLimitingExtensions.AuthPolicy)
             .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         app.MapGet("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
@@ -67,7 +71,8 @@ public static class AuthEndpoints
             .WithName("DirectUsuariosMe")
             .WithSummary("[AUTENTICADO] Buscar perfil do usuário autenticado.")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         app.MapPut("/usuarios/me", ObterPerfilAsync)
             .RequireAuthorization()
@@ -75,7 +80,8 @@ public static class AuthEndpoints
             .WithName("DirectUsuariosUpdateMe")
             .WithSummary("[AUTENTICADO] Consultar/sincronizar perfil do usuário autenticado.")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         return app;
     }

@@ -51,7 +51,7 @@ A arquitetura organiza a aplicação em 4 camadas desacopladas com fluxo unidire
   * Entidades herdam de `BaseEntity` com identificadores inteiros mapeados como `NUMBER(5)` no Oracle (`Id`).
 * **Segurança Criptográfica de Senhas (`HashHelper` com BCrypt):**
   * Senhas nunca são salvas em texto puro. O `HashHelper` implementa hash criptográfico seguro com salt embutido via `BCrypt.Net-Next`.
-  * Validações de tamanho mínimo (8 caracteres), letra maiúscula, caractere especial e número são executadas na borda e no domínio.
+  * Validações de tamanho mínimo (6 caracteres) e máximo (72 caracteres, limite do BCrypt) são executadas na borda (`RegisterRequest`) e no domínio (`Usuario`).
 * **Invariantes & Encapsulamento:**
   * Estados válidos protegidos por construtores semânticos e métodos de mutação (`Atualizar(...)`, `AlterarStatus(...)`, `RegistrarVoto(...)`).
   * Tentativas de transição de estado inválidas (ex.: mover chamado concluído para pendente sem permissão, ou cidadão alterar chamado em execução) lançam `DomainException`.
@@ -119,13 +119,13 @@ MetodoTestado_Cenario_ResultadoEsperado
 - `LoginAsync_CredenciaisInvalidas_DeveRetornarNull`
 
 ### 3.2 Estrutura da Suíte de Testes
-* **Testes Unitários (`ZelaFix.Tests.Unit` — 42 testes):**
-  * Domínio (`EnderecoTests`, `StatusTests`, `UsuarioTests`).
-  * Aplicação (`AuthServiceTests`, `CategoriaServiceTests`, `ChamadoServiceTests`, `FotoImagemTests`, `TokenServiceTests`).
-* **Testes de Integração (`ZelaFix.Tests.Integration` — 35 testes):**
+* **Testes Unitários (`ZelaFix.Tests.Unit` — 53 testes):**
+  * Domínio (`EnderecoTests`, `StatusTests`, `UsuarioTests`, `DomainEntitiesTests`).
+  * Aplicação (`AuthServiceTests`, `CategoriaServiceTests`, `ChamadoServiceTests`, `FotoImagemTests`, `TokenServiceTests`, `ViaCepAndRegisterTests`).
+* **Testes de Integração (`ZelaFix.Tests.Integration` — 53 testes):**
   * `CustomWebApplicationFactory` com banco de dados em memória e fakes (`FakeViaCepService`).
-  * Cobertura de autenticação, permissões RBAC (`GestorOnly`), rate limiting, idempotência, ciclo completo de chamados, HATEOAS, Correlation ID e health checks.
-* **Total:** 77 testes automatizados executando com 100% de aprovação (zero falhas e zero warnings).
+  * Cobertura de autenticação, permissões RBAC (`GestorOnly`), rate limiting, idempotência, ciclo completo de chamados, HATEOAS, Correlation ID, repositórios e health checks.
+* **Total:** 106 testes automatizados executando com 100% de aprovação (zero falhas e zero warnings).
 
 ---
 
@@ -138,6 +138,6 @@ MetodoTestado_Cenario_ResultadoEsperado
 - [x] **Idempotência:** Middleware ativo com header `Idempotency-Key` e retorno `Idempotent-Replayed: true`?
 - [x] **Rate Limiting:** Políticas nativas ativas contra abuso de endpoints públicos e autenticação?
 - [x] **Autenticação & RBAC:** JWT Bearer com claims `CIDADAO` e `GESTOR` e política granular `GestorOnly`?
-- [x] **Persistência Oracle:** Mapeamento completo via Fluent API das 14 tabelas relacionais em EF Core puro (sem PL/SQL)?
+- [x] **Persistência Oracle:** Mapeamento completo via Fluent API das 13 tabelas relacionais de domínio em EF Core puro (sem PL/SQL)?
 - [x] **Observabilidade:** RFC 7807 Problem Details global, Serilog com `X-Correlation-ID` e Health Checks estruturados (`/health`, `/health/ready`, `/health/live`)?
-- [x] **Testes Automatizados:** Suíte com 100% de sucesso em `dotnet test` (77 testes passando: 42 unitários + 35 integração)?
+- [x] **Testes Automatizados:** Suíte com 100% de sucesso em `dotnet test` (106 testes passando: 53 unitários + 53 integração)?

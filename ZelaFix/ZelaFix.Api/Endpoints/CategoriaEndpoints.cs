@@ -20,7 +20,8 @@ public static class CategoriaEndpoints
     {
         grupo.RequireAuthorization()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+            .ProducesProblem(StatusCodes.Status429TooManyRequests)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         grupo.MapGet("/", ListarAsync)
             .WithSummary("Lista todas as categorias de chamado.");

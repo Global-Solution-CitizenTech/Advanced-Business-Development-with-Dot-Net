@@ -4,12 +4,21 @@
 GET {{ZelaFix_HostAddress}}/health
 Accept: application/json
 
-### Login JWT
+### Login JWT (Cidadão Padrão Semeado)
 POST {{ZelaFix_HostAddress}}/api/v1/auth/login
 Content-Type: application/json
 
 {
   "email": "cidadao@zelafix.com.br",
+  "senha": "Password123!"
+}
+
+### Login JWT (Gestor Municipal Padrão Semeado - RBAC GestorOnly)
+POST {{ZelaFix_HostAddress}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "gestor@zelafix.com.br",
   "senha": "Password123!"
 }
 
