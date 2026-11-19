@@ -35,6 +35,7 @@ public static class AuthExtensions
                     ValidIssuer = settings.Issuer,
                     ValidAudience = settings.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key)),
+                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
                     ClockSkew = TimeSpan.FromSeconds(30),
                     RoleClaimType = ClaimsNomes.Perfil,
                     NameClaimType = ClaimsNomes.Nome
@@ -69,7 +70,7 @@ public static class AuthExtensions
 
         services.AddAuthorizationBuilder()
             .AddPolicy(AuthorizationPolicies.GestorOnly,
-                policy => policy.RequireRole(Cargo.Gestor.ParaPerfil()));
+                policy => policy.RequireRole(Cargo.Gestor.ParaPerfil(), Cargo.Admin.ParaPerfil()));
 
         return services;
     }

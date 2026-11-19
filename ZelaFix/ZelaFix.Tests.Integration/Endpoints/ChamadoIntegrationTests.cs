@@ -78,15 +78,21 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         // Act
         var primeira = await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", request, chave);
         var segunda = await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados", request, chave);
+        var comBarraFinal = await cliente.EnviarComChaveAsync(HttpMethod.Post, "/api/v1/chamados/", request, chave);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, primeira.StatusCode);
         Assert.Equal(HttpStatusCode.Created, segunda.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, comBarraFinal.StatusCode);
         Assert.True(segunda.Headers.Contains("Idempotent-Replayed"));
+        Assert.True(comBarraFinal.Headers.Contains("Idempotent-Replayed"));
+        Assert.Equal(primeira.Headers.Location, segunda.Headers.Location);
 
         var original = await primeira.Content.ReadFromJsonAsync<ChamadoResponse>();
         var repetido = await segunda.Content.ReadFromJsonAsync<ChamadoResponse>();
+        var repetidoBarra = await comBarraFinal.Content.ReadFromJsonAsync<ChamadoResponse>();
         Assert.Equal(original!.Id, repetido!.Id);
+        Assert.Equal(original.Id, repetidoBarra!.Id);
 
         var listaResponse = await cliente.GetAsync("/api/v1/chamados?apenasMeus=true&busca=Buraco");
         if (!listaResponse.IsSuccessStatusCode)
@@ -269,5 +275,18 @@ public class ChamadoIntegrationTests(CustomWebApplicationFactory factory)
         // Assert
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await gestor.GetAsync($"/api/v1/chamados/{chamado.Id}")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Listar_ComStatusInvalido_DeveRetornar400()
+    {
+        // Arrange
+        var (cidadao, _) = await factory.CriarCidadaoAsync();
+
+        // Act
+        var response = await cidadao.GetAsync("/api/v1/chamados?status=INEXISTENTE");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 }

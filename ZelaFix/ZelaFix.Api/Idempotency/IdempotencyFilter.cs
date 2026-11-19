@@ -26,14 +26,20 @@ public sealed class IdempotencyFilter<TRequest>(
         var http = context.HttpContext;
         var ct = http.RequestAborted;
 
-        var chaveCliente = http.Request.Headers[Cabecalho].ToString().Trim();
+        var valoresChave = http.Request.Headers[Cabecalho];
+        if (valoresChave.Count > 1)
+            return Erro(http, StatusCodes.Status400BadRequest, "Cabeçalho inválido",
+                $"Envie apenas um cabeçalho {Cabecalho} por requisição.");
+
+        var chaveCliente = valoresChave.ToString().Trim();
         if (chaveCliente.Length == 0 || chaveCliente.Length > TamanhoMaximoChave)
             return Erro(http, StatusCodes.Status400BadRequest, "Cabeçalho inválido",
                 $"Informe o cabeçalho {Cabecalho} (até {TamanhoMaximoChave} caracteres), " +
                 "por exemplo um UUID gerado a cada tentativa de envio.");
 
         var usuario = http.User.ObterUsuarioId()?.ToString() ?? "anonimo";
-        var chave = $"{usuario}:{http.Request.Method}:{http.Request.Path}:{chaveCliente}";
+        var caminho = (http.Request.Path.Value ?? string.Empty).TrimEnd('/').ToLowerInvariant();
+        var chave = $"{usuario}:{http.Request.Method}:{caminho}:{chaveCliente}";
         var impressao = CalcularImpressao(context.Arguments.OfType<TRequest>().FirstOrDefault());
 
         var inicio = await store.IniciarAsync(chave, impressao, ct);
@@ -50,14 +56,16 @@ public sealed class IdempotencyFilter<TRequest>(
             case EstadoIdempotencia.Concluido:
                 logger.LogInformation("Resposta repetida para a chave de idempotência em {Caminho}.", http.Request.Path);
                 http.Response.Headers[CabecalhoRepeticao] = "true";
+                if (!string.IsNullOrEmpty(inicio.Resposta!.Location))
+                    http.Response.Headers.Location = inicio.Resposta.Location;
                 return Results.Content(
-                    inicio.Resposta!.Corpo, "application/json", Encoding.UTF8, inicio.Resposta.StatusCode);
+                    inicio.Resposta.Corpo, "application/json", Encoding.UTF8, inicio.Resposta.StatusCode);
         }
 
         try
         {
             var resultado = await next(context);
-            await RegistrarAsync(chave, resultado, ct);
+            await RegistrarAsync(chave, resultado, CancellationToken.None);
             return resultado;
         }
         catch
@@ -77,7 +85,10 @@ public sealed class IdempotencyFilter<TRequest>(
             && interno is IValueHttpResult { Value: { } valor })
         {
             var corpo = JsonSerializer.Serialize(valor, valor.GetType(), jsonOptions.Value.SerializerOptions);
-            await store.ConcluirAsync(chave, new RespostaArmazenada(sucesso.StatusCode!.Value, corpo), ct);
+            var location = sucesso.StatusCode == StatusCodes.Status201Created
+                ? interno.GetType().GetProperty("Location")?.GetValue(interno) as string
+                : null;
+            await store.ConcluirAsync(chave, new RespostaArmazenada(sucesso.StatusCode!.Value, corpo, location), ct);
         }
         else
         {

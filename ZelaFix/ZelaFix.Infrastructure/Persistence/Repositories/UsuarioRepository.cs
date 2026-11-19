@@ -16,5 +16,8 @@ public sealed class UsuarioRepository(ZelaFixDbContext context)
     private IQueryable<Usuario> ComDetalhes() =>
         Context.Usuarios
             .Include(u => u.Telefone)
-            .Include(u => u.Endereco).ThenInclude(e => e.Bairro);
+            .Include(u => u.Endereco)
+                .ThenInclude(e => e.Bairro)
+                    .ThenInclude(b => b.Cidade)
+                        .ThenInclude(c => c.Estado);
 }

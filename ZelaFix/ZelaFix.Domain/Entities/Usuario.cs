@@ -19,7 +19,7 @@ public sealed class Usuario : BaseEntity
     public Telefone? Telefone { get; private set; }
     public List<Chamado> Chamados { get; private set; } = [];
 
-    public bool EhGestor => Cargo == Cargo.Gestor;
+    public bool EhGestor => Cargo is Cargo.Gestor or Cargo.Admin;
 
     private Usuario() { }
 

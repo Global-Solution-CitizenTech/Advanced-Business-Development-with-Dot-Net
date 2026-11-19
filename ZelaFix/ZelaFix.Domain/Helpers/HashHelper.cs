@@ -13,6 +13,13 @@ public static class HashHelper
         if (string.IsNullOrWhiteSpace(senhaPura) || string.IsNullOrWhiteSpace(hash))
             return false;
 
-        return BCrypt.Net.BCrypt.Verify(senhaPura, hash);
+        try
+        {
+            return BCrypt.Net.BCrypt.Verify(senhaPura, hash);
+        }
+        catch (BCrypt.Net.SaltParseException)
+        {
+            return false;
+        }
     }
 }

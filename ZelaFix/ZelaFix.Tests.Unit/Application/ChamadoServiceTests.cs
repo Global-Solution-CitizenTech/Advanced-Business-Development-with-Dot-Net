@@ -269,4 +269,38 @@ public class ChamadoServiceTests
         Assert.Equal(esperado, resultado);
         _chamados.Verify(c => c.ObterEstatisticasAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task ApoiarAsync_AoAtingirTresApoios_DeveEscalonarPrioridadeParaAltaERegistrarHistorico()
+    {
+        // Arrange
+        JaApoiou(false);
+        LeituraDoChamado(Leitura(id: 1, autorId: 10, status: "PENDENTE"));
+        _votos.Setup(v => v.CountAsync(It.IsAny<Expression<Func<VotoChamado, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(3);
+
+        var chamado = new Chamado("Buraco na rua", "Descrição suficiente", [1, 2], 10, 1, 1, 2, 1);
+        chamado.DefinirIdParaTeste(1);
+        _chamados.Setup(c => c.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(chamado);
+
+        var prioridadeAlta = new Prioridade("ALTA");
+        prioridadeAlta.DefinirIdParaTeste(3);
+        _prioridades.Setup(p => p.FirstOrDefaultAsync(It.IsAny<Expression<Func<Prioridade, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(prioridadeAlta);
+
+        var statusPendente = new Status("PENDENTE");
+        statusPendente.DefinirIdParaTeste(1);
+        _status.Setup(s => s.FirstOrDefaultAsync(It.IsAny<Expression<Func<Status, bool>>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(statusPendente);
+
+        // Act
+        await Criar().ApoiarAsync(1, 20);
+
+        // Assert
+        Assert.Equal(3, chamado.PrioridadeId);
+        _chamados.Verify(c => c.UpdateAsync(chamado, It.IsAny<CancellationToken>()), Times.Once);
+        _historicos.Verify(h => h.AddAsync(
+            It.Is<HistChamado>(x => x.ChamadoId == 1 && x.Observacoes.Contains("3 apoios")),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
 }

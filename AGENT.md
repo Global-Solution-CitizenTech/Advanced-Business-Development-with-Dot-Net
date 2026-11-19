@@ -31,7 +31,7 @@ A arquitetura organiza a aplicação em 4 camadas desacopladas com fluxo unidire
    * Totalmente agnóstico de frameworks, persistência ou bibliotecas de terceiros (zero EF Core ou ASP.NET Core no domínio).
 2. **`ZelaFix.Application` (Contratos, DTOs & Orquestração):**
    * DTOs modelados com C# 14 `record` imutáveis, validações declarativas com `System.ComponentModel.DataAnnotations` e sanitização.
-   * Contratos de persistência (`IChamadoRepository`, `IUsuarioRepository`, `ICategoriaRepository`, `IUnitOfWork`) e interfaces de serviços de domínio (`IChamadoService`, `IAuthService`, `ICategoriaService`, `ITokenService`, `IEnderecoResolver`, `IViaCepService`).
+   * Contratos de persistência (`IRepository<T>`, `IChamadoRepository`, `IUsuarioRepository`, `IUnitOfWork`) e interfaces de serviços de domínio (`IChamadoService`, `IAuthService`, `ICategoriaService`, `ITokenService`, `IEnderecoResolver`, `IViaCepService`).
    * **Zero Dependência NoSQL ou LLM:** Persistência estritamente relacional em Oracle Database, sem dependências artificiais de MongoDB ou APIs externas de inteligência generativa.
 3. **`ZelaFix.Infrastructure` (Persistência Relacional EF Core):**
    * Contexto relacional `ZelaFixDbContext` (Oracle via `Oracle.EntityFrameworkCore`).
@@ -39,7 +39,7 @@ A arquitetura organiza a aplicação em 4 camadas desacopladas com fluxo unidire
    * Repositórios genéricos e especializados (`ChamadoRepository`, `UsuarioRepository`, `UnitOfWork`) operando via Entity Framework Core puro.
 4. **`ZelaFix.Api` (Hosting, Minimal APIs & Borda HTTP):**
    * ASP.NET Core Minimal APIs de alta performance com mapeamento modularizado (`MapAuthEndpoints`, `MapCategoriaEndpoints`, `MapChamadoEndpoints`).
-   * Segurança JWT Bearer com roles baseadas em claims (`ClaimsNomes.Perfil`: `CIDADAO` / `GESTOR`), middleware de idempotência com chave `Idempotency-Key`, rate limiting nativo Fixed Window e tratamento global de exceções (RFC 7807 Problem Details).
+   * Segurança JWT Bearer com roles baseadas em claims (`ClaimsNomes.Perfil`: `CIDADAO` / `GESTOR` / `ADMIN`), middleware de idempotência com chave `Idempotency-Key`, rate limiting nativo Fixed Window e tratamento global de exceções (RFC 7807 Problem Details).
 
 ---
 
@@ -100,7 +100,7 @@ A arquitetura organiza a aplicação em 4 camadas desacopladas com fluxo unidire
     - `GlobalPolicy`: 100 requisições / minuto por IP.
     - `AuthPolicy`: 10 tentativas / minuto para login e registro.
 * **Tratamento Global de Exceções (`GlobalExceptionHandler` / RFC 7807):**
-  * Captura `DomainException` (400), `KeyNotFoundException` (404), `InvalidOperationException` (409) e erros não tratados (500), devolvendo JSON padronizado `ProblemDetails` com `TraceId` e timestamp.
+  * Captura `DomainException` / `ArgumentException` (400), `UnauthorizedAccessException` (401), `AcessoNegadoException` (403), `KeyNotFoundException` (404), `ConflitoException` / `DbUpdateException` (409), `OracleException` / `HttpRequestException` (502), `TimeoutException` (504) e erros não tratados (500), devolvendo JSON padronizado `ProblemDetails` com `traceId`, `correlationId` e timestamp.
 * **Observabilidade & Health Checks:**
   * Endpoints `/health`, `/health/ready` e `/health/live` reportando status em JSON estruturado com métricas de tempo de resposta do banco Oracle e ViaCEP.
 
@@ -119,13 +119,13 @@ MetodoTestado_Cenario_ResultadoEsperado
 - `LoginAsync_CredenciaisInvalidas_DeveRetornarNull`
 
 ### 3.2 Estrutura da Suíte de Testes
-* **Testes Unitários (`ZelaFix.Tests.Unit` — 53 testes):**
+* **Testes Unitários (`ZelaFix.Tests.Unit` — 55 testes):**
   * Domínio (`EnderecoTests`, `StatusTests`, `UsuarioTests`, `DomainEntitiesTests`).
   * Aplicação (`AuthServiceTests`, `CategoriaServiceTests`, `ChamadoServiceTests`, `FotoImagemTests`, `TokenServiceTests`, `ViaCepAndRegisterTests`).
-* **Testes de Integração (`ZelaFix.Tests.Integration` — 53 testes):**
+* **Testes de Integração (`ZelaFix.Tests.Integration` — 54 testes):**
   * `CustomWebApplicationFactory` com banco de dados em memória e fakes (`FakeViaCepService`).
   * Cobertura de autenticação, permissões RBAC (`GestorOnly`), rate limiting, idempotência, ciclo completo de chamados, HATEOAS, Correlation ID, repositórios e health checks.
-* **Total:** 106 testes automatizados executando com 100% de aprovação (zero falhas e zero warnings).
+* **Total:** 109 testes automatizados executando com 100% de aprovação (zero falhas e zero warnings).
 
 ---
 
@@ -137,7 +137,7 @@ MetodoTestado_Cenario_ResultadoEsperado
 - [x] **Minimal APIs:** Endpoints estruturados sob `/api/v1/` com TypedResults e OpenAPI/Swagger na raiz (`/`)?
 - [x] **Idempotência:** Middleware ativo com header `Idempotency-Key` e retorno `Idempotent-Replayed: true`?
 - [x] **Rate Limiting:** Políticas nativas ativas contra abuso de endpoints públicos e autenticação?
-- [x] **Autenticação & RBAC:** JWT Bearer com claims `CIDADAO` e `GESTOR` e política granular `GestorOnly`?
+- [x] **Autenticação & RBAC:** JWT Bearer com claims `CIDADAO`, `GESTOR` e `ADMIN` e política granular `GestorOnly`?
 - [x] **Persistência Oracle:** Mapeamento completo via Fluent API das 13 tabelas relacionais de domínio em EF Core puro (sem PL/SQL)?
 - [x] **Observabilidade:** RFC 7807 Problem Details global, Serilog com `X-Correlation-ID` e Health Checks estruturados (`/health`, `/health/ready`, `/health/live`)?
-- [x] **Testes Automatizados:** Suíte com 100% de sucesso em `dotnet test` (106 testes passando: 53 unitários + 53 integração)?
+- [x] **Testes Automatizados:** Suíte com 100% de sucesso em `dotnet test` (109 testes passando: 55 unitários + 54 integração)?

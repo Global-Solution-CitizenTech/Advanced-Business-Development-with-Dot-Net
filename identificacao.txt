@@ -18,5 +18,5 @@ REPOSITÓRIO GITHUB:
 https://github.com/Global-Solution-CitizenTech/Advanced-Business-Development-with-Dot-Net
 
 DEPLOY / SWAGGER:
-https://advanced-business-development-with-dot.onrender.com/ 
+https://advanced-business-development-with-dot.onrender.com/
 ================================================================================

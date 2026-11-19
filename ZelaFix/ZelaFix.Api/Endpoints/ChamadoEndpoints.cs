@@ -27,7 +27,8 @@ public static class ChamadoEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         grupo.MapGet("/", ListarAsync)
-            .WithSummary("Lista chamados (categoriaId, bairroId, status, busca, apenasMeus, incluirFoto) com paginação (page começa em 0).");
+            .WithSummary("Lista chamados (categoriaId, bairroId, status, busca, apenasMeus, incluirFoto) com paginação (page começa em 0).")
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
         grupo.MapGet("/estatisticas", ObterEstatisticasAsync)
             .WithSummary("Retorna o total consolidado de chamados por status e total de apoios.");
@@ -117,7 +118,7 @@ public static class ChamadoEndpoints
     private static async Task<Results<Ok<ChamadoResponse>, NotFound>> ApoiarAsync(
         int id, ClaimsPrincipal user, IChamadoService service, CancellationToken ct)
     {
-        var atualizado = await service.ApoiarAsync(id, user.ObterUsuarioId() ?? 0, ct);
+        var atualizado = await service.ApoiarAsync(id, user.ExigirUsuarioId(), ct);
         return atualizado is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(ResourceLinks.Enrich(atualizado));
@@ -126,7 +127,7 @@ public static class ChamadoEndpoints
     private static async Task<Results<Ok<ChamadoResponse>, NotFound>> RemoverApoioAsync(
         int id, ClaimsPrincipal user, IChamadoService service, CancellationToken ct)
     {
-        var atualizado = await service.RemoverApoioAsync(id, user.ObterUsuarioId() ?? 0, ct);
+        var atualizado = await service.RemoverApoioAsync(id, user.ExigirUsuarioId(), ct);
         return atualizado is null
             ? TypedResults.NotFound()
             : TypedResults.Ok(ResourceLinks.Enrich(atualizado));

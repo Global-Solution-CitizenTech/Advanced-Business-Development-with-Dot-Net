@@ -192,12 +192,21 @@ public sealed class ChamadoService(
             var chamado = await chamados.GetByIdAsync(id, ct);
             if (chamado is not null && atual.Status != Status.Concluido && atual.Status != Status.Rejeitado)
             {
-                int? novaPrioridadeId = totalVotos switch
+                var prioridadeAlvo = totalVotos switch
                 {
-                    >= 5 when chamado.PrioridadeId < 4 => 4, // URGENTE
-                    >= 3 when chamado.PrioridadeId < 3 => 3, // ALTA
+                    >= 5 => "URGENTE",
+                    >= 3 => "ALTA",
                     _ => null
                 };
+
+                int? novaPrioridadeId = null;
+                if (prioridadeAlvo is not null)
+                {
+                    var alvoId = (await prioridades.FirstOrDefaultAsync(p => p.Nome == prioridadeAlvo, ct))?.Id
+                                 ?? (prioridadeAlvo == "URGENTE" ? 4 : 3);
+                    if (chamado.PrioridadeId < alvoId)
+                        novaPrioridadeId = alvoId;
+                }
 
                 if (novaPrioridadeId is { } novaP)
                 {

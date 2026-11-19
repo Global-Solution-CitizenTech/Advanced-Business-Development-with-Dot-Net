@@ -77,5 +77,15 @@ public class DomainEntitiesTests
         Assert.False(HashHelper.Verificar("Errada", hash));
         Assert.False(HashHelper.Verificar("", hash));
         Assert.False(HashHelper.Verificar("SenhaForte123", ""));
+        Assert.False(HashHelper.Verificar("SenhaForte123", "hash-malformado-nao-bcrypt"));
+    }
+
+    [Fact]
+    public void Usuario_ComCargoAdmin_DeveTerPerfilAdminEPermissaoGestor()
+    {
+        var admin = new Usuario("Admin Geral", "admin@zelafix.com.br", "Admin#2026", ZelaFix.Domain.Enums.Cargo.Admin, 1);
+
+        Assert.True(admin.EhGestor);
+        Assert.Equal("ADMIN", ZelaFix.Domain.Enums.CargoExtensions.ParaPerfil(admin.Cargo));
     }
 }

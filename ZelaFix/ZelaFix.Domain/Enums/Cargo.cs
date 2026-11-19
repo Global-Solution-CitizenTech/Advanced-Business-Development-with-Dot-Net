@@ -3,5 +3,6 @@
 public enum Cargo
 {
     Cidadao = 0,
-    Gestor = 1
+    Gestor = 1,
+    Admin = 2
 }

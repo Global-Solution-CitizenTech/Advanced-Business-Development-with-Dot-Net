@@ -122,5 +122,12 @@ public class AuthIntegrationTests(CustomWebApplicationFactory factory)
 
         // Assert
         Assert.Equal(auth.Usuario.Id, perfil!.Id);
+        Assert.NotNull(perfil.Endereco);
+        Assert.Equal("01001000", perfil.Endereco!.Cep);
+        Assert.Equal("Praça da Sé", perfil.Endereco.Rua);
+        Assert.Equal("100", perfil.Endereco.Numero);
+        Assert.Equal("Sé", perfil.Endereco.Bairro);
+        Assert.Equal("São Paulo", perfil.Endereco.Cidade);
+        Assert.Equal("São Paulo", perfil.Endereco.Estado);
     }
 }

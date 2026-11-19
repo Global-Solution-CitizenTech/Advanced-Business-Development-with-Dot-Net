@@ -24,8 +24,4 @@
     <ProjectReference Include="..\ZelaFix.Domain\ZelaFix.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="UnitTest1.cs" />
-  </ItemGroup>
-
 </Project>

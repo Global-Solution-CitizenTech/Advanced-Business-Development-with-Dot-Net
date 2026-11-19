@@ -13,5 +13,6 @@ public static class ClaimsPrincipalExtensions
     public static int ExigirUsuarioId(this ClaimsPrincipal user) =>
         user.ObterUsuarioId() ?? throw new UnauthorizedAccessException("O token não identifica o usuário.");
 
-    public static bool EhGestor(this ClaimsPrincipal user) => user.IsInRole(Cargo.Gestor.ParaPerfil());
+    public static bool EhGestor(this ClaimsPrincipal user) =>
+        user.IsInRole(Cargo.Gestor.ParaPerfil()) || user.IsInRole(Cargo.Admin.ParaPerfil());
 }

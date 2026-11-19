@@ -8,7 +8,7 @@ public enum EstadoIdempotencia
     PayloadDiferente
 }
 
-public sealed record RespostaArmazenada(int StatusCode, string Corpo);
+public sealed record RespostaArmazenada(int StatusCode, string Corpo, string? Location = null);
 
 public sealed record ResultadoIdempotencia(EstadoIdempotencia Estado, RespostaArmazenada? Resposta = null);
 

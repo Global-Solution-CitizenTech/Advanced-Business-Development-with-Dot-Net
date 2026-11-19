@@ -2,7 +2,7 @@
 
 > **Advanced Business Development with .NET** — FIAP (2º Ano ADS / 2TDSPG — Global Solution 2026 - 2º Semestre)  
 > 🌐 **API em Produção (Render / Swagger UI):** https://advanced-business-development-with-dot.onrender.com/  
-> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR`) e suíte de **106 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
+> API RESTful corporativa de alta performance desenvolvida em **.NET 10 (Minimal APIs)** fundamentada em **Clean Architecture (DDD)**, princípios **SOLID**, **KISS**, **YAGNI**, **DRY** e **Clean Code**, persistência relacional estrita em **Oracle Database + EF Core (sem dependência de PL/SQL)**, **Paginação, Ordenação e Filtros Dinâmicos**, **Idempotência de Requisições** com cabeçalho `Idempotency-Key`, **Rate Limiting Nativo Fixed Window**, camadas completas de **Monitoramento e Observabilidade** (Health Checks com `HealthCheckResponseWriter`, Logging Estruturado Serilog com `X-Correlation-ID`, tratamento de exceções RFC 7807 Problem Details), segurança de senhas com **BCrypt**, **Autenticação e Autorização JWT Bearer (RFC 7519 / HS256)** com controle de acesso baseado em papéis (**RBAC**: `CIDADAO` / `GESTOR` / `ADMIN`) e suíte de **109 Testes Automatizados (Padrão AAA)** com xUnit, Moq e WebApplicationFactory.
 
 ---
 
@@ -15,7 +15,7 @@
 ![Serilog](https://img.shields.io/badge/Serilog-Structured%20Logs-000000?logo=serilog&logoColor=white&style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-Bearer%20HS256-orange?style=for-the-badge)
 ![BCrypt](https://img.shields.io/badge/BCrypt-Security-green?style=for-the-badge)
-![xUnit](https://img.shields.io/badge/xUnit-106%20Tests%20Passing-brightgreen?style=for-the-badge)
+![xUnit](https://img.shields.io/badge/xUnit-109%20Tests%20Passing-brightgreen?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Oracle%20Free-2496ED?logo=docker&logoColor=white&style=for-the-badge)
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI%203.0-85EA2D?logo=swagger&logoColor=black&style=for-the-badge)
 ![ODS 11](https://img.shields.io/badge/CitizenTech-ODS%2011%20Cidades%20Sustent%C3%A1veis-blue?style=for-the-badge)
@@ -26,11 +26,11 @@
 
 | Nome | RM | Turma | GitHub | LinkedIn |
 | :--- | :---: | :---: | :--- | :--- |
-| **Enzo Okuizumi** | **561432** | 2TDSPG | [EnzoOkuizumiFiap](https://github.com/EnzoOkuizumiFiap) | [Enzo Okuizumi](https://www.linkedin.com/in/enzo-okuizumi-b60292256/) |
-| **Gustavo Okada** | **563428** | 2TDSPG | [Gdev3356](https://github.com/Gdev3356) | [Gustavo Okada](https://www.linkedin.com/in/gustavo-okada-53a3b8359/) |
+| **Enzo Okuizumi Miranda de Souza** | **561432** | 2TDSPG | [EnzoOkuizumiFiap](https://github.com/EnzoOkuizumiFiap) | [Enzo Okuizumi](https://www.linkedin.com/in/enzo-okuizumi-b60292256/) |
+| **Gustavo Keiji Okada** | **563428** | 2TDSPG | [Gdev3356](https://github.com/Gdev3356) | [Gustavo Okada](https://www.linkedin.com/in/gustavo-okada-53a3b8359/) |
 | **Lucas Barros Gouveia** | **566422** | 2TDSPG | [LuzBGouveia](https://github.com/LuzBGouveia) | [Lucas Barros Gouveia](https://www.linkedin.com/in/lucas-barros-gouveia-09b147355/) |
 | **Luna de Carvalho Guimarães** | **562290** | 2TDSPG | [lunaguima](https://github.com/lunaguima) | [Luna Guimarães](https://www.linkedin.com/in/luna-guimar%C3%A3es-b0ba82309/) |
-| **Milton Marcelino** | **564836** | 2TDSPG | [MiltonMarcelino](https://github.com/MiltonMarcelino) | [Milton Marcelino](https://www.linkedin.com/in/milton-marcelino-250298142) |
+| **Milton Jakson de Sousa Marcelino** | **564836** | 2TDSPG | [MiltonMarcelino](https://github.com/MiltonMarcelino) | [Milton Marcelino](https://www.linkedin.com/in/milton-marcelino-250298142) |
 
 ---
 
@@ -131,7 +131,7 @@ O banco de dados do **ZelaFix** é normalizado em 3ª Forma Normal (3FN), garant
 | `BAIRRO` | `Bairro` | Bairros normalizados pertencentes a uma cidade específica para agregação territorial e cálculo de criticidade. |
 | `CIDADE` | `Cidade` | Cidades federadas vinculadas a uma Unidade da Federação. |
 | `ESTADO` | `Estado` | Unidades Federativas (UF) brasileiras com nomenclatura oficial. |
-| `USUARIO` | `Usuario` (`Cargo` Enum) | Cidadãos e Gestores públicos municipais com senhas criptografadas via BCrypt e coluna `CARGO` (`CIDADAO` / `GESTOR`). |
+| `USUARIO` | `Usuario` (`Cargo` Enum) | Cidadãos, Gestores públicos municipais e Administradores com senhas criptografadas via BCrypt e coluna `CARGO` (`CIDADAO` / `GESTOR` / `ADMIN`). |
 | `TELEFONE` | `Telefone` | Contatos telefônicos associados de forma 1:1 a cada usuário (`NUM_DDD` + `NUM_TEL`). |
 | `STATUS` | `Status` | Máquina de estados finita do ciclo de vida operacional: `PENDENTE`, `EM_ANALISE`, `EM_EXECUCAO`, `CONCLUIDO`, `REJEITADO`. |
 | `PRIORIDADE` | `Prioridade` | Classificação de criticidade do atendimento público: `BAIXA`, `MEDIA`, `ALTA`, `URGENTE`. |
@@ -197,21 +197,20 @@ ZelaFix/
 ├── ZelaFix.Domain/                 # Camada de Domínio: POCOs puros, Entidades, Enums e Invariantes
 │   ├── Common/                     # BaseEntity, PoliticaPrioridade, Validacao
 │   ├── Entities/                   # 13 Entidades relacionais (Chamado, Categoria, Usuario, Endereco, etc.)
-│   ├── Enums/                      # Cargo (Cidadao = 0, Gestor = 1) e extensões de mapeamento
+│   ├── Enums/                      # Cargo (Cidadao = 0, Gestor = 1, Admin = 2) e extensões de mapeamento
 │   ├── Exceptions/                 # DomainException (regras semânticas violadas)
 │   └── Helpers/                    # HashHelper (Criptografia de senha com BCrypt)
 │
 ├── ZelaFix.Application/            # Camada de Aplicação: Casos de Uso, DTOs (Records), Mappers e Contratos
 │   ├── Auth/                       # JwtSettings, ClaimsNomes
 │   ├── DTOs/                       # Records imutáveis com DataAnnotations (Requests, Responses, Filtros)
-│   ├── Repositories/               # Contratos IChamadoRepository, IUsuarioRepository, ICategoriaRepository, IUnitOfWork
+│   ├── Repositories/               # Contratos IRepository<T>, IChamadoRepository, IUsuarioRepository, IUnitOfWork
 │   └── Services/                   # Interfaces e Implementações dos Serviços de Aplicação (Auth, Categoria, Chamado, ViaCEP)
 │
 ├── ZelaFix.Infrastructure/         # Camada de Infraestrutura: EF Core Oracle
-│   ├── Persistence/                # ZelaFixDbContext, DbInitializer, Migrations Oracle
-│   │   ├── Configurations/         # Fluent API isolada (Cadastro, Chamado, Localizacao, Usuario)
-│   │   └── Repositories/           # Implementações Repository<T>, ChamadoRepository, UsuarioRepository, UnitOfWork
-│   └── DependencyInjection.cs      # Injeção de dependências (Oracle 19c SQL compatibility)
+│   └── Persistence/                # ZelaFixDbContext, DbInitializer, DependencyInjection (Oracle 19c), Migrations Oracle
+│       ├── Configurations/         # Fluent API isolada (Cadastro, Chamado, Localizacao, Usuario)
+│       └── Repositories/           # Implementações Repository<T>, ChamadoRepository, UsuarioRepository, UnitOfWork
 │
 ├── ZelaFix.Api/                    # Camada de Apresentação & Hosting: Minimal APIs, Segurança e Observabilidade
 │   ├── Endpoints/                  # Mapeamento modularizado (Auth/Usuários, Categorias, Chamados)
@@ -223,11 +222,11 @@ ZelaFix/
 │   ├── Middleware/                 # CorrelationIdMiddleware (rastreabilidade distribuída X-Correlation-ID)
 │   └── Security/                   # AuthorizationPolicies (GestorOnly), BearerSecurityOperationFilter
 │
-├── ZelaFix.Tests.Unit/             # Suíte de Testes Unitários xUnit (53 testes — Domínio e Aplicação com Moq)
+├── ZelaFix.Tests.Unit/             # Suíte de Testes Unitários xUnit (55 testes — Domínio e Aplicação com Moq)
 │   ├── Application/                # AuthServiceTests, CategoriaServiceTests, ChamadoServiceTests, FotoImagemTests, TokenServiceTests, ViaCepAndRegisterTests
 │   └── Domain/                     # EnderecoTests, StatusTests, UsuarioTests, DomainEntitiesTests
 │
-└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (53 testes — WebApplicationFactory e InMemory DB)
+└── ZelaFix.Tests.Integration/      # Suíte de Testes de Integração (54 testes — WebApplicationFactory e InMemory DB)
     ├── Endpoints/                  # AuthIntegrationTests, CategoriaIntegrationTests, ChamadoIntegrationTests, InfraestruturaIntegrationTests, ObservabilityAndHateoasIntegrationTests, RepositoriesAndInfrastructureTests
     └── Fixtures/                   # CustomWebApplicationFactory, FakeViaCepService
 ```
@@ -244,7 +243,7 @@ Endpoints de diagnóstico serializados em JSON padronizado com tempos de respost
 | Endpoint | Propósito | Componentes Verificados | Status Esperado |
 | :--- | :--- | :--- | :---: |
 | **`/health`** | Diagnóstico completo de integridade | Processo API + Conectividade Oracle (`CanConnectAsync`) + API Externa ViaCEP | `200 Healthy` |
-| **`/health/ready`** | Readiness Probe (Prontidão para receber tráfego) | Conexão ativa com o banco Oracle Database e integridade do pool EF Core | `200 Healthy` |
+| **`/health/ready`** | Readiness Probe (Prontidão para receber tráfego) | Conexão ativa com o Oracle Database (`CanConnectAsync`) e disponibilidade do ViaCEP | `200 Healthy` |
 | **`/health/live`** | Liveness Probe (Detecção de travamento de processo) | Thread pool ativa e servidor HTTP respondendo | `200 Healthy` |
 
 **Exemplo de Resposta Estruturada (`GET /health`):**
@@ -346,7 +345,7 @@ Para conectar o app mobile React Native (Expo) à API .NET 10 em ambiente de des
 
 ## 📋 Catálogo Completo de Endpoints REST (23 Paths no Swagger)
 
-A API expõe **23 paths** e **34 operações** organizadas em **7 grupos** documentados interativamente via Swagger OpenAPI 3.0 na raiz (`/`): `Autenticação`, `Usuários`, `Categorias`, `Categorias (Rotas Diretas)`, `Chamados`, `Chamados (Rotas Diretas)` e `Monitoramento & Health`.
+A API expõe **23 paths** e **38 operações** organizadas em **7 grupos** documentados interativamente via Swagger OpenAPI 3.0 na raiz (`/`): `Autenticação`, `Usuários`, `Categorias`, `Categorias (Rotas Diretas)`, `Chamados`, `Chamados (Rotas Diretas)` e `Monitoramento & Health`. Todos os endpoints de negócio também documentam respostas `429` (Rate Limiting) e `500` (Problem Details RFC 7807).
 
 ---
 
@@ -383,12 +382,12 @@ A API expõe **23 paths** e **34 operações** organizadas em **7 grupos** docum
 
 | Método | Endpoint | Perfil / Autorização | Cabeçalhos Especiais | Descrição | Status Codes |
 | :---: | :--- | :---: | :---: | :--- | :---: |
-| `GET` | `/api/v1/chamados` | `[Authorize]` | `Authorization: Bearer <token>` | Lista chamados paginados (página base 0) com filtros (`categoriaId`, `bairroId`, `status`, `busca`, `apenasMeus`, `incluirFoto`) | `200`, `401` |
+| `GET` | `/api/v1/chamados` | `[Authorize]` | `Authorization: Bearer <token>` | Lista chamados paginados (página base 0) com filtros (`categoriaId`, `bairroId`, `status`, `busca`, `apenasMeus`, `incluirFoto`) | `200`, `400`, `401` |
 | `GET` | `/api/v1/chamados/estatisticas` | `[Authorize]` | `Authorization: Bearer <token>` | Retorna métricas consolidadas (Total, Abertos, Em Andamento, Concluídos, Rejeitados, Apoios) | `200`, `401` |
 | `GET` | `/api/v1/chamados/{id}` | `[Authorize]` | `Authorization: Bearer <token>` | Detalha a ocorrência completa com histórico de status e foto em Base64 | `200`, `401`, `404` |
-| `POST` | `/api/v1/chamados` | `[Authorize]` | `Idempotency-Key` *(obrigatório)* | Registra novo chamado com foto, categoria e endereço resolvido | `201`, `400`, `401` |
+| `POST` | `/api/v1/chamados` | `[Authorize]` | `Idempotency-Key` *(obrigatório)* | Registra novo chamado com foto, categoria e endereço resolvido | `201`, `400`, `401`, `409`, `422` |
 | `PUT` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Edita ocorrência (autor apenas enquanto status for `PENDENTE`) | `200`, `400`, `401`, `403`, `404` |
-| `PATCH` | `/api/v1/chamados/{id}/status` | `GestorOnly` | `Idempotency-Key` *(obrigatório)* | Movimenta status do chamado com parecer técnico e histórico imutável | `200`, `400`, `401`, `403`, `404` |
+| `PATCH` | `/api/v1/chamados/{id}/status` | `GestorOnly` | `Idempotency-Key` *(obrigatório)* | Movimenta status do chamado com parecer técnico e histórico imutável | `200`, `400`, `401`, `403`, `404`, `409`, `422` |
 | `POST` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Registra apoio popular (EF Core `VOTO_CHAMADO`); recalcula prioridade | `200`, `400`, `401`, `403`, `404`, `409` |
 | `DELETE` | `/api/v1/chamados/{id}/apoiar` | `[Authorize]` | `Authorization: Bearer <token>` | Cancela apoio comunitário previamente concedido pelo munícipe | `200`, `401`, `404` |
 | `DELETE` | `/api/v1/chamados/{id}` | Autor / `GestorOnly` | `Authorization: Bearer <token>` | Exclui ocorrência (autor apenas enquanto estiver `PENDENTE`) | `204`, `400`, `401`, `403`, `404` |
@@ -414,10 +413,10 @@ A solução conta com uma bateria rigorosa de testes automatizados seguindo o pa
 
 ```text
 Suíte de Testes ZelaFix:
-├── ZelaFix.Tests.Unit:        53 testes passando (100% sucesso)
-└── ZelaFix.Tests.Integration: 53 testes passando (100% sucesso)
+├── ZelaFix.Tests.Unit:        55 testes passando (100% sucesso)
+└── ZelaFix.Tests.Integration: 54 testes passando (100% sucesso)
 ────────────────────────────────────────────────────────────────
-Total Geral:                  106 Testes Passando com Sucesso! (0 Falhas)
+Total Geral:                  109 Testes Passando com Sucesso! (0 Falhas)
 ```
 
 ### Cobertura de Código (Code Coverage - Cobertura XML)
@@ -491,7 +490,7 @@ Total Geral:                  106 Testes Passando com Sucesso! (0 Falhas)
 
 3. **Acessar a Documentação Interativa:**
    Abra no seu navegador:
-   * **Swagger UI:** `http://localhost:5034/` (ou `http://localhost:5289/` dependendo da porta alocada)
+   * **Swagger UI:** `http://localhost:5034/` (`https://localhost:7099/` no perfil `https`)
    * **Health Check Geral:** `http://localhost:5034/health`
 
 ---

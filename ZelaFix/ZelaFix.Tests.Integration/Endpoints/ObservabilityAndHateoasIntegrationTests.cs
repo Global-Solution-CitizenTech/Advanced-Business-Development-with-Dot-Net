@@ -160,5 +160,8 @@ public class ObservabilityAndHateoasIntegrationTests(CustomWebApplicationFactory
 
         var responses = postChamados.GetProperty("responses");
         Assert.True(responses.TryGetProperty("429", out _));
+        Assert.True(chamadosPath.GetProperty("get").GetProperty("responses").TryGetProperty("400", out _));
+        Assert.Equal(23, paths.EnumerateObject().Count());
+        Assert.True(doc.GetProperty("components").GetProperty("securitySchemes").TryGetProperty("Bearer", out _));
     }
 }
